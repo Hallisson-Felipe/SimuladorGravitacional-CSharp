@@ -1,25 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SimuladorGavitacional
+﻿namespace SimuladorGavitacional
 {
-    internal class Corpo
-    {
-        public string Nome {  get; set; }
-        public double Massa { get; set; }
-        public double Densidade { get; set; }
-        public double PosX { get; set; }
-        public double PosY { get; set; }
-        public double VelX { get; set; }
-        public double VelY { get; set; }
+	internal class Corpo
+	{
+
+		public Color Cor { get; set; }
+		public string Nome { get; set; }
+		public double Massa { get; set; }
+		public double Densidade { get; set; }
+		public double PosX { get; set; }
+		public double PosY { get; set; }
+		public double VelX { get; set; }
+		public double VelY { get; set; }
 
 
 
-        public double CalcularRaio()
-        {
-            double raio = Math.Cbrt((3 * Massa) / (4 * Math.PI * Densidade));
-            return raio;
-        }
-    }
+		public double CalcularRaio()
+		{
+			double raio = Math.Cbrt((3 * Massa) / (4 * Math.PI * Densidade));
+			return raio;
+		}
+	}
 }
