@@ -7,11 +7,5 @@
     <Compile Update="FormUniverso.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="SimuladorGravitacional-CSharp\Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="SimuladorGravitacional-CSharp\FormUniverso.cs">
-      <SubType>Form</SubType>
-    </Compile>
   </ItemGroup>
 </Project>
