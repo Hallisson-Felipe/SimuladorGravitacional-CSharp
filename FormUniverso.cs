@@ -1,63 +1,63 @@
 ﻿namespace SimuladorGavitacional
 {
-	partial class FormUniverso : Form
-	{
+    partial class FormUniverso : Form
+    {
 
-		private Universo universo;
-		private int altura;
-		private int largura;
-		public FormUniverso(Universo u)
-		{
-			InitializeComponent();
-			universo = u;
-			largura = panelUniverso.Width;
-			altura = panelUniverso.Height;
-			universo.EscalaUniverso = 500;
-			this.WindowState = FormWindowState.Maximized;
-		}
+        private Universo universo;
+        private int altura;
+        private int largura;
+        public FormUniverso(Universo u)
+        {
+            InitializeComponent();
+            universo = u;
+            universo.EscalaUniverso = 500;
+            this.WindowState = FormWindowState.Maximized;
+        }
 
 
-		private void FormUniverso_Load(object sender, EventArgs e)
-		{
+        private void FormUniverso_Load(object sender, EventArgs e)
+        {
+            panelUniverso.Invalidate();
+        }
 
-			panelUniverso.Invalidate();
-		}
+        private void panelUniverso_Paint(object sender, PaintEventArgs e)
+        {
+            for (int i = 0; i < universo.C.Length; i++)
+            {
+                Corpo corpo = universo.C[i];
+                if (corpo != null)
+                {
+                    if (corpo.PosX == 0 || corpo.PosY == 0)
+                    {
+                        universo.GerarPosicoes(panelUniverso.Width, panelUniverso.Height, universo);
+                    }
+                    float raioPixels = (float)(corpo.CalcularRaio() * universo.EscalaUniverso);
 
-		private void panelUniverso_Paint(object sender, PaintEventArgs e)
-		{
-			for (int i = 0; i < universo.C.Length; i++)
-			{
-				Corpo corpo = universo.C[i];
-				if (corpo != null)
-				{
-					if (corpo.PosX == 0 || corpo.PosY == 0)
-					{
-						universo.GerarCorposAleatorios(largura, altura, universo);
-					}
-					float x = (float)corpo.PosX;
-					float y = (float)corpo.PosY;
+                    float x = (float)corpo.PosX - raioPixels;
+                    float y = (float)corpo.PosY - raioPixels;
 
-					e.Graphics.FillEllipse(
-						Brushes.Blue,
-						x,
-						y,
-						(float)((corpo.CalcularRaio() * 2) * universo.EscalaUniverso),
-						(float)((corpo.CalcularRaio() * 2) * universo.EscalaUniverso)
-					);
+                    float diametro = raioPixels * 2;
+                    using (SolidBrush brush = new SolidBrush(corpo.Cor))
+                    {
+                        e.Graphics.FillEllipse(
+                            brush,
+                            x,
+                            y,
+                            diametro,
+                            diametro
+                        );
 
-
-					MessageBox.Show(corpo.CalcularRaio().ToString());
-					//MessageBox.Show("Raio infinito? " +
-					//	double.IsInfinity(corpo.CalcularRaio()));
-
-					//MessageBox.Show("Escala infinita? " +
-					//	double.IsInfinity(universo.EscalaUniverso));
-
-					//MessageBox.Show("Resultado infinito? " +
-					//	double.IsInfinity(corpo.CalcularRaio() * 2 * universo.EscalaUniverso));
-
-				}
-			}
-		}
-	}
+                        //escreve o nome do corpo
+                        e.Graphics.DrawString(
+                            corpo.Nome,
+                            this.Font,
+                            Brushes.Black,
+                            x,
+                            y - 20
+                        );
+                                        }
+                }
+            }
+        }
+    }
 }

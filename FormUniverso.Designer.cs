@@ -20,41 +20,44 @@
 			base.Dispose(disposing);
 		}
 
-		#region Windows Form Designer generated code
+        #region Windows Form Designer generated code
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
-			panelUniverso = new Panel();
-			SuspendLayout();
-			// 
-			// panelUniverso
-			// 
-			panelUniverso.Dock = DockStyle.Fill;
-			panelUniverso.Location = new Point(0, 0);
-			panelUniverso.MaximumSize = new Size(1920, 1080);
-			panelUniverso.MinimumSize = new Size(1920, 1080);
-			panelUniverso.Name = "panelUniverso";
-			panelUniverso.Size = new Size(1920, 1080);
-			panelUniverso.TabIndex = 0;
-			panelUniverso.Paint += panelUniverso_Paint;
-			// 
-			// FormUniverso
-			// 
-			AutoScaleDimensions = new SizeF(7F, 15F);
-			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(800, 450);
-			Controls.Add(panelUniverso);
-			Name = "FormUniverso";
-			Text = "FormUniverso";
-			ResumeLayout(false);
-		}
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            panelUniverso = new Panel();
+            SuspendLayout();
+            // 
+            // panelUniverso
+            // 
+            panelUniverso.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelUniverso.BackColor = SystemColors.ActiveCaption;
+            panelUniverso.Location = new Point(83, 13);
+            panelUniverso.Margin = new Padding(3, 4, 3, 4);
+            panelUniverso.Name = "panelUniverso";
+            panelUniverso.Size = new Size(744, 559);
+            panelUniverso.TabIndex = 0;
+            panelUniverso.Paint += panelUniverso_Paint;
+            // 
+            // FormUniverso
+            // 
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(914, 600);
+            Controls.Add(panelUniverso);
+            Margin = new Padding(3, 4, 3, 4);
+            Name = "FormUniverso";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "FormUniverso";
+            Load += FormUniverso_Load;
+            ResumeLayout(false);
+        }
 
-		#endregion
+        #endregion
 
-		private Panel panelUniverso;
+        private Panel panelUniverso;
 	}
 }
