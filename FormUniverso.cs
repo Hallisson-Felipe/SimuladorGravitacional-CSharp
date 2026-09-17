@@ -39,6 +39,7 @@
                     float diametro = raioPixels * 2;
                     using (SolidBrush brush = new SolidBrush(corpo.Cor))
                     {
+                        //pinta o corpo
                         e.Graphics.FillEllipse(
                             brush,
                             x,
@@ -46,6 +47,16 @@
                             diametro,
                             diametro
                         );
+
+                        //faz um ponto no centro do corpo
+                        e.Graphics.FillEllipse(
+                            Brushes.Black,
+                            (float)corpo.PosX - 2,
+                            (float)corpo.PosY - 2,
+                            4,
+                            4
+                        );
+
 
                         //escreve o nome do corpo
                         e.Graphics.DrawString(
