@@ -1,9 +1,13 @@
-﻿namespace SimuladorGavitacional
+﻿using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+
+namespace SimuladorGavitacional
 {
     class Universo
     {
         //array de corpos
-        public Corpo[] C;
+        public Corpo[] Corpos;
         //array de nomes
         public string[] Nomes = new string[100];
 
@@ -21,8 +25,6 @@
 
         public Universo()
         {
-            C = new Corpo[1000];
-
             //lê o arquivo com os nomes aleatórios e coloca todos no array de nomes
             string aux = File.ReadAllText("nomes_corpos_simulador.txt");
             Nomes = aux.Split(';');
@@ -33,6 +35,7 @@
         public void GerarCorposAleatorios(int quantidade)
         {
             Random random = new Random();
+            Corpos = new Corpo[quantidade];
 
             for (int i = 0; i < quantidade; i++)
             {
@@ -49,29 +52,110 @@
 
                 corpo.Cor = Color.FromArgb(random.Next(256),random.Next(256),random.Next(256));
 
-                C[i] = corpo;
+                Corpos[i] = corpo;
 
             }
-
+             
         }
 
-        public void GerarPosicoes(int altura, int largura, Universo u)
+        public void GerarPosicoes(int altura, int largura, Universo universo, Graphics graphics)
         {
             Random random = new Random();
-            for (int i = 0; i < u.C.Length; i++)
+            int margem = 100;
+            for (int i = 0; i < universo.Corpos.Length; i++)
             {
-                if (C[i] == null)
+                if (Corpos[i] == null)
                 {
                     return;
                 }
-                int margem = 200;
-                C[i].PosX = margem + random.NextDouble() * (altura - 2 * margem);
-                C[i].PosY = margem + random.NextDouble() * (largura - 2 * margem);
+                if(i == 0)
+                {
+                    int tentativas = 0;
+                    bool posValida = false;
+                    while (!posValida || tentativas >1000)
+                    {
+                        Corpos[i].PosX = margem + random.NextDouble() * (largura - 2 * margem);
+                        Corpos[i].PosY = margem + random.NextDouble() * (altura - 2 * margem);
+                        float raioPixels = (float)(Corpos[i].CalcularRaio() * universo.EscalaUniverso);
+
+                        float x = (float)Corpos[i].PosX - raioPixels;
+                        float y = (float)Corpos[i].PosY - raioPixels;
+
+                        float diametro = raioPixels * 2;
+                        using (GraphicsPath caminho = new GraphicsPath())
+                        {
+                            caminho.AddEllipse(x, y, diametro, diametro);
+                            Corpos[i].AreaOcupada = new Region(caminho);
+                        }
+                        
+
+                        if (ValidarPosicao(Corpos[i].PosX, Corpos[i].PosY, raioPixels,altura, largura))
+                        {
+                            posValida = true;
+                        }
+
+                    }
+                }
+                else
+                {
+                    int tentativas = 0;
+                    bool posValida = false;
+                    while (!posValida || tentativas > 1000)
+                    {
+                        Corpos[i].PosX = margem + random.NextDouble() * (largura - 2 * margem);
+                        Corpos[i].PosY = margem + random.NextDouble() * (altura - 2 * margem);
+                        float raioPixels = (float)(Corpos[i].CalcularRaio() * universo.EscalaUniverso);
+
+                        float x = (float)Corpos[i].PosX - raioPixels;
+                        float y = (float)Corpos[i].PosY - raioPixels;
+
+                        float diametro = raioPixels * 2;
+                        GraphicsPath caminho = new GraphicsPath();
+                        caminho.AddEllipse(x, y, diametro, diametro);
+                        Region regiao = new Region(caminho);
+                        if (ValidarPosicao(regiao, i, graphics) && ValidarPosicao(Corpos[i].PosX, Corpos[i].PosY, raioPixels, altura - 2*margem, largura - 2 * margem))
+                        {
+                            Corpos[i].AreaOcupada = regiao;
+                            posValida = true;
+                        }
+                        else 
+                        {
+                            regiao.Dispose();
+                            tentativas++;
+                        }
+
+                    }
+
+                }
             }
         }
 
 
+        public bool ValidarPosicao(Region regiao, int indice, Graphics graphics)
+        {
+            for(int i = 0; i< indice; i++)
+            {
+                using (Region intersecao = regiao.Clone())
+                {
+                    intersecao.Intersect(Corpos[i].AreaOcupada);
 
+                    if (!intersecao.IsEmpty(graphics))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        public bool ValidarPosicao(double x, double y, double raio, double altura, double largura)
+        {
+            if (x - raio < 0 || x + raio > largura || y - raio < 0 || y + raio > altura)
+            {
+                return false;
+            }
+            return true;
+
+        }
 
     }
 }

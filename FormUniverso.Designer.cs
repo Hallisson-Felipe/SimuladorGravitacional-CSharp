@@ -33,12 +33,13 @@
             // 
             // panelUniverso
             // 
-            panelUniverso.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelUniverso.AutoSize = true;
             panelUniverso.BackColor = SystemColors.ActiveCaption;
-            panelUniverso.Location = new Point(83, 13);
+            panelUniverso.Dock = DockStyle.Fill;
+            panelUniverso.Location = new Point(0, 0);
             panelUniverso.Margin = new Padding(3, 4, 3, 4);
             panelUniverso.Name = "panelUniverso";
-            panelUniverso.Size = new Size(744, 559);
+            panelUniverso.Size = new Size(914, 600);
             panelUniverso.TabIndex = 0;
             panelUniverso.Paint += panelUniverso_Paint;
             // 
@@ -54,6 +55,7 @@
             Text = "FormUniverso";
             Load += FormUniverso_Load;
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion

@@ -47,10 +47,10 @@ namespace SimuladorGavitacional
             universo.DensidadeMax = 22590.0;
             universo.DensidadeMin = 0.0899;
 
+            universo.EscalaUniverso = 500;
+
 
             universo.GerarCorposAleatorios((int)numericQuant.Value);
-
-            universo.EscalaUniverso = 500;
 
             FormUniverso formUniverso = new FormUniverso(universo);
             formUniverso.Show();
