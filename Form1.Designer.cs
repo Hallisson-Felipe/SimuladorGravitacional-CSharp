@@ -285,7 +285,7 @@
             MinimumSize = new Size(617, 656);
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Form1";
+            Text = "Simulador Gravitacional";
             Load += Form1_Load;
             Cabecalho.ResumeLayout(false);
             Cabecalho.PerformLayout();

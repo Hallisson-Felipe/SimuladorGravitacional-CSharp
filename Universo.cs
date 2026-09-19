@@ -11,6 +11,9 @@ namespace SimuladorGavitacional
         //array de nomes
         public string[] Nomes = new string[100];
 
+        public double[] posicoesXIniciais;
+        public double[] posicoesYIniciais;
+
         //limites dos corpos
         public double EscalaUniverso { get; set; }
 
@@ -62,6 +65,8 @@ namespace SimuladorGavitacional
         //metodo para gerars as posiçoes dos corpos no universo
         public void GerarPosicoes(int altura, int largura, Universo universo, Graphics graphics)
         {
+            posicoesXIniciais = new double[universo.Corpos.Length];
+            posicoesYIniciais = new double[universo.Corpos.Length];
             int corposIgnorados = 0;
             Random random = new Random();
 
@@ -108,9 +113,11 @@ namespace SimuladorGavitacional
                             Corpos[i].AreaOcupada = new Region(caminho);
                         }
                         
-                        //valida a posicao criada e quebra o lopp
+                        //valida a posicao criada, salva as posicoes iniciais e quebra o lopp
                         if (ValidarPosicao(Corpos[i].PosX, Corpos[i].PosY, raioPixels,altura, largura))
                         {
+                            posicoesXIniciais[i] = Corpos[i].PosX;
+                            posicoesYIniciais[i] = Corpos[i].PosY;
                             posValida = true;
                         }
                     }
@@ -154,9 +161,15 @@ namespace SimuladorGavitacional
                         //garante que os corpos nao se sobreponham nem sejam criados fora da area visivel do universo
                         if (ValidarPosicao(regiao, i, graphics) && ValidarPosicao(Corpos[i].PosX, Corpos[i].PosY, raioPixels, altura, largura))
                         {
-                            //confirma a posicao e quebra o laco
+                            //confirma a posicao
                             Corpos[i].AreaOcupada = regiao;
+
+                            //salva as posicoes iniciais dos corpos
+                            posicoesXIniciais[i] = Corpos[i].PosX;
+                            posicoesYIniciais[i] = Corpos[i].PosY;
+
                             posValida = true;
+
                         }
                         else 
                         {
@@ -336,6 +349,54 @@ namespace SimuladorGavitacional
             //converte o deslocamento de metros para pixels e atualiza a posicao do corpo
             Corpos[indice].PosX += deslocamentoX * EscalaUniverso;
             Corpos[indice].PosY += deslocamentoY * EscalaUniverso;
+        }
+
+
+        public void ExecutarIteracao(double deltaTempo)
+        {
+            double[] aceleracoesX = new double[Corpos.Length];
+            double[] aceleracoesY = new double[Corpos.Length];
+
+            //calcular todas as aceleracoes
+            for (int i = 0; i < Corpos.Length; i++)
+            {
+                if (Corpos[i] == null)
+                {
+                    continue;
+                }
+
+                double ax, ay;
+                (ax,ay) = CalcularAceleracao(i);
+
+                aceleracoesX[i] = ax;
+                aceleracoesY[i] = ay;
+            }
+
+            //atualizar todas as velocidades
+            for (int i = 0; i < Corpos.Length; i++)
+            {
+                if (Corpos[i] == null)
+                {
+                    continue;
+                }
+
+                double ax, ay;
+                (ax, ay) = CalcularAceleracao(i);
+
+                Corpos[i].VelX += aceleracoesX[i] * deltaTempo;
+                Corpos[i].VelY += aceleracoesY[i] * deltaTempo;
+            }
+
+            //atualizar todas as posicoes
+            for (int i = 0; i < Corpos.Length; i++)
+            {
+                if (Corpos[i] == null)
+                {
+                    continue;
+                }
+
+                AtualizarPosicao(i, deltaTempo);
+            }
         }
     }
 }
