@@ -62,6 +62,7 @@ namespace SimuladorGavitacional
         //metodo para gerars as posiçoes dos corpos no universo
         public void GerarPosicoes(int altura, int largura, Universo universo, Graphics graphics)
         {
+            int corposIgnorados = 0;
             Random random = new Random();
 
             //define a distancia dos objetos em relacao a margem no momento da criacao
@@ -73,20 +74,21 @@ namespace SimuladorGavitacional
                 //sai do loop se o corpo nao existir
                 if (Corpos[i] == null)
                 {
-                    return;
+                    continue;
                 }
 
                 //gera a posicao do primeiro corpo
                 if(i == 0)
                 {
-                    
                     int tentativas = 0;
 
                     bool posValida = false;
                     
                     //laço que gera as coordenadas conforme validacao
-                    while (!posValida || tentativas > 200)
+                    while (!posValida && tentativas < 1000)
                     {
+                        tentativas++;
+
                         Corpos[i].PosX = margem + random.NextDouble() * (largura - 2 * margem);
                         Corpos[i].PosY = margem + random.NextDouble() * (altura - 2 * margem);
 
@@ -111,7 +113,12 @@ namespace SimuladorGavitacional
                         {
                             posValida = true;
                         }
-
+                    }
+                    //caso nao exista posicao valida para um corpo, ele nao sera exibido
+                    if (!posValida)
+                    {
+                        Corpos[i] = null;
+                        corposIgnorados++;
                     }
                 }
 
@@ -123,8 +130,10 @@ namespace SimuladorGavitacional
                     bool posValida = false;
 
                     //laço que gera as coordenadas conforme validacao
-                    while (!posValida || tentativas > 200)
+                    while (!posValida && tentativas < 1000)
                     {
+                        tentativas++;
+
                         Corpos[i].PosX = margem + random.NextDouble() * (largura - 2 * margem);
                         Corpos[i].PosY = margem + random.NextDouble() * (altura - 2 * margem);
 
@@ -143,7 +152,7 @@ namespace SimuladorGavitacional
                         Region regiao = new Region(caminho);
 
                         //garante que os corpos nao se sobreponham nem sejam criados fora da area visivel do universo
-                        if (ValidarPosicao(regiao, i, graphics) && ValidarPosicao(Corpos[i].PosX, Corpos[i].PosY, raioPixels, altura - 2*margem, largura - 2 * margem))
+                        if (ValidarPosicao(regiao, i, graphics) && ValidarPosicao(Corpos[i].PosX, Corpos[i].PosY, raioPixels, altura, largura))
                         {
                             //confirma a posicao e quebra o laco
                             Corpos[i].AreaOcupada = regiao;
@@ -154,24 +163,42 @@ namespace SimuladorGavitacional
                             //discarta a regiao invalida e incrementa as tentativas
                             caminho.Dispose();
                             regiao.Dispose();
-                            tentativas++;
                         }
 
                     }
 
+                    //caso nao exista posicao valida para um corpo, ele nao sera exibido
+                    if (!posValida)
+                    {
+                        Corpos[i] = null;
+                        corposIgnorados++;
+                    }
+
                 }
+            }
+
+            //alerta o usuario caso algum corpo nao sja exibido
+            if(corposIgnorados > 0)
+            {
+                MessageBox.Show($"{corposIgnorados} corpos foram ignorados por não caberem no universo.");
             }
         }
 
+        
         //metodo para verificar se um corpo nao esta sendo criado em cima de outro
         public bool ValidarPosicao(Region regiao, int indice, Graphics graphics)
         {
             //laco para percorrer todas ao posicoes anteriores ao indice do corpo verificado
             for(int i = 0; i< indice; i++)
             {
+                if (Corpos[i] == null || Corpos[i].AreaOcupada == null)
+                {
+                    continue;
+                }
                 //cria um clone da regiao do novo corpo para que caso ela seja valida, nao seja aletaraada
                 using (Region intersecao = regiao.Clone())
                 {
+                    
                     //faz a intersecao das regioes onde os corpos estao
                     intersecao.Intersect(Corpos[i].AreaOcupada);
 
@@ -184,7 +211,7 @@ namespace SimuladorGavitacional
                 }
             }
             
-            // retorna true caso o corpo esteja em uma posicao valida
+            //retorna true caso o corpo esteja em uma posicao valida
             return true;
         }
 
@@ -197,7 +224,6 @@ namespace SimuladorGavitacional
                 return false;
             }
             return true;
-
         }
 
     }

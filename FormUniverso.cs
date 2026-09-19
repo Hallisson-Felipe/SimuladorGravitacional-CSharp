@@ -6,8 +6,6 @@ namespace SimuladorGavitacional
     {
 
         private Universo universo;
-        private int altura;
-        private int largura;
         public FormUniverso(Universo u)
         {
             InitializeComponent();
