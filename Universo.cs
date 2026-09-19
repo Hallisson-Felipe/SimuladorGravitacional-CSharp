@@ -226,5 +226,116 @@ namespace SimuladorGavitacional
             return true;
         }
 
+
+        //metodo para calcular a forca gravitacional
+        public (double forcaTotalx, double forcaTotalY) CalcularForcaGravitacional(int indice)
+        {
+            const double G = 6.67430e-11;
+            double distancia;
+            double forcaTotalX = 0;
+            double forcaTotalY = 0;
+
+            //verifica se o corpo existe
+            if (Corpos[indice] == null)
+            {
+                return (0, 0);
+            }
+
+            for (int i = 0; i< Corpos.Length; i++)
+            {
+                if (i == indice || Corpos[i] == null)
+                {
+                    continue;
+                }
+                //converte as posicoes de pixels para metros
+                double x1 = Corpos[indice].PosX / EscalaUniverso;
+                double y1 = Corpos[indice].PosY / EscalaUniverso;
+
+                double x2 = Corpos[i].PosX / EscalaUniverso;
+                double y2 = Corpos[i].PosY / EscalaUniverso;
+
+                //calcula a distancia entre os corpos
+                distancia = Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
+
+
+                //calcula a forca gravitacional entre os corpos
+                double forca = G * (Corpos[indice].Massa * Corpos[i].Massa) / Math.Pow(distancia, 2);
+
+                //calcula a forca exercida sobre o corpo
+                double dx = x2 - x1;
+                double dy = y2 - y1;
+
+                //calcula a direcao da forca
+                double direcaoX = dx / distancia;
+                double direcaoY = dy / distancia;
+
+                //decompoe a forca nos eixos x e y
+                double forcaX = forca * direcaoX;
+                double forcaY = forca * direcaoY;
+
+                //soma as forcas exercidas pelos outros corpos
+                forcaTotalX += forcaX;
+                forcaTotalY += forcaY;
+            }
+            return (forcaTotalX, forcaTotalY);
+
+        }
+
+        //metodo para calcular a aceleracao do corpo com base na forca gravitacional resultante
+        public (double aceleracaoX, double aceleracaoY) CalcularAceleracao(int indice)
+        {
+            //verifica se o corpo existe
+            if (Corpos[indice] == null)
+            {
+                return (0, 0);
+            }
+
+            //calcula a forca gravitacional resultante nos eixos X e Y
+            (double forcaX, double forcaY) = CalcularForcaGravitacional(indice);
+
+            //calcula a aceleracao do corpo utilizando a segunda lei de Newton
+            double aceleracaoX = forcaX / Corpos[indice].Massa;
+            double aceleracaoY = forcaY / Corpos[indice].Massa;
+
+            //retorna a aceleracao nos eixos X e Y
+            return (aceleracaoX, aceleracaoY);
+        }
+
+
+        //metodo para atualizar a velocidade do corpo com base na aceleracao e no tempo decorrido
+        public void AtualizarVelocidade(int indice, double deltaTempo)
+        {
+            //verifica se o corpo existe
+            if (Corpos[indice] == null)
+            {
+                return;
+            }
+
+            //calcula a aceleracao do corpo nos eixos X e Y
+            (double aceleracaoX, double aceleracaoY) = CalcularAceleracao(indice);
+
+            //atualiza a velocidade do corpo considerando a aceleracao e o tempo decorrido
+            Corpos[indice].VelX += aceleracaoX * deltaTempo;
+            Corpos[indice].VelY += aceleracaoY * deltaTempo;
+        }
+
+
+        //metodo para atualizar a posicao do corpo com base na velocidade e no tempo decorrido
+        public void AtualizarPosicao(int indice, double deltaTempo)
+        {
+            //verifica se o corpo existe
+            if (Corpos[indice] == null)
+            {
+                return;
+            }
+
+            //calcula o deslocamento do corpo em metros nos eixos X e Y
+            double deslocamentoX = Corpos[indice].VelX * deltaTempo;
+            double deslocamentoY = Corpos[indice].VelY * deltaTempo;
+
+            //converte o deslocamento de metros para pixels e atualiza a posicao do corpo
+            Corpos[indice].PosX += deslocamentoX * EscalaUniverso;
+            Corpos[indice].PosY += deslocamentoY * EscalaUniverso;
+        }
     }
 }
