@@ -139,7 +139,7 @@
             btnIniciar.TabIndex = 0;
             btnIniciar.Text = "Iniciar";
             btnIniciar.UseVisualStyleBackColor = false;
-            btnIniciar.Click += btnContinuar_Click;
+            btnIniciar.Click += btnIniciar_Click;
             // 
             // timerUniverso
             // 

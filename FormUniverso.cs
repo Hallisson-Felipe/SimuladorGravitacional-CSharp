@@ -11,7 +11,7 @@ namespace SimuladorGavitacional
         {
             InitializeComponent();
             universo = u;
-            deltaTempo = 0.0001;
+            deltaTempo = 0.0005;
             universo.EscalaUniverso = 300;
             this.WindowState = FormWindowState.Maximized;
         }
@@ -79,7 +79,7 @@ namespace SimuladorGavitacional
             panelUniverso.Invalidate();
         }
 
-        private void btnContinuar_Click(object sender, EventArgs e)
+        private void btnIniciar_Click(object sender, EventArgs e)
         {
             //inicia o timer e muda o texto do botao
             timerUniverso.Start();
@@ -112,6 +112,7 @@ namespace SimuladorGavitacional
                 universo.Corpos[i]!.PosY = universo.posicoesYIniciais[i];
 
             }
+
             //muda o texto do botao e reinicia o formulario;
             btnIniciar.Text = "Iniciar";
             panelUniverso.Invalidate();
