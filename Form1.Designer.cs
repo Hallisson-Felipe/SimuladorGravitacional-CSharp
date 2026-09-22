@@ -1,4 +1,4 @@
-﻿namespace SimuladorGavitacional
+namespace SimuladorGavitacional
 {
     partial class Form1
     {
@@ -31,11 +31,6 @@
             Cabecalho = new Panel();
             Titulo = new Label();
             Lateral = new Panel();
-            label5 = new Label();
-            label4 = new Label();
-            label3 = new Label();
-            label2 = new Label();
-            label1 = new Label();
             btnGerar = new Button();
             numericVelMax = new NumericUpDown();
             numericVelMin = new NumericUpDown();
@@ -81,11 +76,6 @@
             // Lateral
             // 
             Lateral.BackColor = SystemColors.Control;
-            Lateral.Controls.Add(label5);
-            Lateral.Controls.Add(label4);
-            Lateral.Controls.Add(label3);
-            Lateral.Controls.Add(label2);
-            Lateral.Controls.Add(label1);
             Lateral.Controls.Add(btnGerar);
             Lateral.Controls.Add(numericVelMax);
             Lateral.Controls.Add(numericVelMin);
@@ -103,60 +93,10 @@
             Lateral.Size = new Size(599, 446);
             Lateral.TabIndex = 2;
             // 
-            // label5
             // 
-            label5.AutoSize = true;
-            label5.Font = new Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label5.ForeColor = SystemColors.ControlDarkDark;
-            label5.Location = new Point(492, 291);
-            label5.Name = "label5";
-            label5.Size = new Size(54, 17);
-            label5.TabIndex = 15;
-            label5.Text = "Máx. 10";
             // 
-            // label4
             // 
-            label4.AutoSize = true;
-            label4.Font = new Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label4.ForeColor = SystemColors.ControlDarkDark;
-            label4.Location = new Point(492, 250);
-            label4.Name = "label4";
-            label4.Size = new Size(54, 17);
-            label4.TabIndex = 14;
-            label4.Text = "Máx. 10";
             // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Font = new Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label3.ForeColor = SystemColors.ControlDarkDark;
-            label3.Location = new Point(492, 185);
-            label3.Name = "label3";
-            label3.Size = new Size(68, 17);
-            label3.TabIndex = 13;
-            label3.Text = "Máx. 1000";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Font = new Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label2.ForeColor = SystemColors.ControlDarkDark;
-            label2.Location = new Point(492, 140);
-            label2.Name = "label2";
-            label2.Size = new Size(68, 17);
-            label2.TabIndex = 12;
-            label2.Text = "Máx. 1000";
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label1.ForeColor = SystemColors.ControlDarkDark;
-            label1.Location = new Point(492, 78);
-            label1.Name = "label1";
-            label1.Size = new Size(54, 17);
-            label1.TabIndex = 11;
-            label1.Text = "Máx. 25";
             // 
             // btnGerar
             // 
@@ -314,10 +254,5 @@
         private NumericUpDown numericQuant;
         private NumericUpDown numericMassaMin;
         private Button btnGerar;
-        private Label label1;
-        private Label label5;
-        private Label label4;
-        private Label label3;
-        private Label label2;
     }
 }

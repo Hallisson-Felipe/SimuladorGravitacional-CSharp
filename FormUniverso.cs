@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Drawing.Drawing2D;
 
 namespace SimuladorGavitacional
@@ -40,7 +40,7 @@ namespace SimuladorGavitacional
             //loop para percorrer os corpos e desenha-los na tela
             for (int i = 0; i < universo.Corpos.Length; i++)
             {
-                Corpo corpo = universo.Corpos[i];
+                Corpo? corpo = universo.Corpos[i];
 
                 if (corpo != null)
                 {
@@ -108,8 +108,8 @@ namespace SimuladorGavitacional
                 }
 
                 //reseta as posicoes
-                universo.Corpos[i].PosX = universo.posicoesXIniciais[i];
-                universo.Corpos[i].PosY = universo.posicoesYIniciais[i];
+                universo.Corpos[i]!.PosX = universo.posicoesXIniciais[i];
+                universo.Corpos[i]!.PosY = universo.posicoesYIniciais[i];
 
             }
             //muda o texto do botao e reinicia o formulario;
