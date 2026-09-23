@@ -7,7 +7,7 @@ namespace SimuladorGavitacional
     class Universo
     {
         //array de corpos
-        public Corpo?[] Corpos = Array.Empty<Corpo>();
+        public Corpo[] Corpos;
         //array de nomes
         public string[] Nomes = new string[100];
 
@@ -190,12 +190,16 @@ namespace SimuladorGavitacional
                 }
             }
 
-            //grava a posicao inicial de cada corpo em arquivo texto usando a classe abstrata
             GravadorDados gravador = new GravadorArquivoTexto();
-            gravador.GravarPosicoesIniciais(Corpos, "posicoes_iniciais.txt");
+            //pega o caminho completo da localizacao do arquivo txt
+            string caminhoArquivo = Path.GetFullPath(
+                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "posicoes_iniciais.txt")
+            );
+            //grava a posicao inicial de cada corpo em arquivo texto usando a classe abstrata
+            gravador.GravarPosicoesIniciais(Corpos, caminhoArquivo);
 
-            //alerta o usuario caso algum corpo nao sja exibido
-            if(corposIgnorados > 0)
+            //alerta o usuario caso algum corpo nao seja exibido
+            if (corposIgnorados > 0)
             {
                 MessageBox.Show($"{corposIgnorados} corpos foram ignorados por não caberem no universo.");
             }

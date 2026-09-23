@@ -35,7 +35,6 @@
             trackBar1 = new TrackBar();
             panel1 = new Panel();
             btnParar = new Button();
-            btnReiniciar = new Button();
             btnIniciar = new Button();
             timerUniverso = new System.Windows.Forms.Timer(components);
             panelUniverso.SuspendLayout();
@@ -46,7 +45,6 @@
             // 
             // panelUniverso
             // 
-            panelUniverso.AutoSize = true;
             panelUniverso.BackColor = Color.DimGray;
             panelUniverso.BackgroundImageLayout = ImageLayout.Stretch;
             panelUniverso.Controls.Add(panelController);
@@ -75,7 +73,7 @@
             labelVelocidade.AutoSize = true;
             labelVelocidade.BackColor = SystemColors.Control;
             labelVelocidade.Font = new Font("Segoe UI", 20F);
-            labelVelocidade.Location = new Point(860, 36);
+            labelVelocidade.Location = new Point(628, 39);
             labelVelocidade.Name = "labelVelocidade";
             labelVelocidade.Size = new Size(54, 46);
             labelVelocidade.TabIndex = 4;
@@ -83,7 +81,8 @@
             // 
             // trackBar1
             // 
-            trackBar1.Location = new Point(557, 26);
+            trackBar1.BackColor = Color.DimGray;
+            trackBar1.Location = new Point(324, 26);
             trackBar1.Maximum = 100;
             trackBar1.Minimum = 1;
             trackBar1.Name = "trackBar1";
@@ -97,12 +96,11 @@
             // 
             panel1.BackColor = Color.Transparent;
             panel1.Controls.Add(btnParar);
-            panel1.Controls.Add(btnReiniciar);
             panel1.Controls.Add(btnIniciar);
             panel1.Dock = DockStyle.Left;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(470, 94);
+            panel1.Size = new Size(318, 94);
             panel1.TabIndex = 3;
             // 
             // btnParar
@@ -117,23 +115,11 @@
             btnParar.UseVisualStyleBackColor = false;
             btnParar.Click += btnParar_Click;
             // 
-            // btnReiniciar
-            // 
-            btnReiniciar.Anchor = AnchorStyles.Top | AnchorStyles.Bottom;
-            btnReiniciar.BackColor = Color.White;
-            btnReiniciar.Location = new Point(162, 12);
-            btnReiniciar.Name = "btnReiniciar";
-            btnReiniciar.Size = new Size(140, 70);
-            btnReiniciar.TabIndex = 2;
-            btnReiniciar.Text = "Reiniciar";
-            btnReiniciar.UseVisualStyleBackColor = false;
-            btnReiniciar.Click += btnReiniciar_Click;
-            // 
             // btnIniciar
             // 
             btnIniciar.BackColor = Color.YellowGreen;
             btnIniciar.Dock = DockStyle.Right;
-            btnIniciar.Location = new Point(308, 0);
+            btnIniciar.Location = new Point(156, 0);
             btnIniciar.Name = "btnIniciar";
             btnIniciar.Size = new Size(162, 94);
             btnIniciar.TabIndex = 0;
@@ -163,14 +149,12 @@
             ((System.ComponentModel.ISupportInitialize)trackBar1).EndInit();
             panel1.ResumeLayout(false);
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Timer timerUniverso;
         private Panel panelController;
-        private Button btnReiniciar;
         private Button btnParar;
         private Button btnIniciar;
         private PanelUniverso panelUniverso;

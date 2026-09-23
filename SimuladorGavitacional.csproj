@@ -10,10 +10,14 @@
 
   <ItemGroup>
     <None Remove="nomes_corpos_simulador.txt" />
+    <None Remove="posicoes_iniciais.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="nomes_corpos_simulador.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="posicoes_iniciais.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

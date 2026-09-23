@@ -81,48 +81,22 @@ namespace SimuladorGavitacional
 
         private void btnIniciar_Click(object sender, EventArgs e)
         {
-            //inicia o timer e muda o texto do botao
+            //inicia o timer
             timerUniverso.Start();
-            btnIniciar.Text = "Continuar";
         }
 
         private void btnParar_Click(object sender, EventArgs e)
         {
-            //para o timer
+            //para o timer e muda o t
             timerUniverso.Stop();
-        }
-
-        //evento acionado quando btnReiniciar e clicado
-        private void btnReiniciar_Click(object sender, EventArgs e)
-        {
-            //para o timer
-            timerUniverso.Stop();
-
-            //laco que percorre o array de corpos e reinicia as posicoes
-            for (int i = 0; i < universo.Corpos.Length; i++)
-            {
-                //ignora o corpo caso ele seja nulo
-                if (universo.Corpos[i] == null)
-                {
-                    continue;
-                }
-
-                //reseta as posicoes
-                universo.Corpos[i]!.PosX = universo.posicoesXIniciais[i];
-                universo.Corpos[i]!.PosY = universo.posicoesYIniciais[i];
-
-            }
-
-            //muda o texto do botao e reinicia o formulario;
-            btnIniciar.Text = "Iniciar";
-            panelUniverso.Invalidate();
+            btnIniciar.Text = "Continuar";
         }
 
         //evento acionado quando o usuario altera a velocidade da simulacao
         private void trackBar1_Scroll(object sender, EventArgs e)
         {
             //calcula o deltaTempo com base no valor selecionado pelo usuario
-            deltaTempo = 0.0001 * trackBar1.Value / 50.0;
+            deltaTempo = 0.0005 * trackBar1.Value / 50.0;
 
             //exibe o multiplicador de velocidade
             labelVelocidade.Text = $"{trackBar1.Value / 50.0:F1}x";
