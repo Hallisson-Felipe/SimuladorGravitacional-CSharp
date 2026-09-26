@@ -13,12 +13,6 @@ namespace SimuladorGavitacional
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            //define os limites do corpo
-            universo.DensidadeMax = 22590.0;
-            universo.DensidadeMin = 0.0899;
-
-            universo.EscalaUniverso = 500;
-
         }
 
         //evento ativado quando btnGerar e clicado

@@ -31,6 +31,11 @@ namespace SimuladorGavitacional
             Cabecalho = new Panel();
             Titulo = new Label();
             Lateral = new Panel();
+            label5 = new Label();
+            label4 = new Label();
+            label3 = new Label();
+            label2 = new Label();
+            label1 = new Label();
             btnGerar = new Button();
             numericVelMax = new NumericUpDown();
             numericVelMin = new NumericUpDown();
@@ -58,7 +63,7 @@ namespace SimuladorGavitacional
             Cabecalho.Dock = DockStyle.Top;
             Cabecalho.Location = new Point(0, 0);
             Cabecalho.Name = "Cabecalho";
-            Cabecalho.Size = new Size(599, 163);
+            Cabecalho.Size = new Size(661, 163);
             Cabecalho.TabIndex = 1;
             // 
             // Titulo
@@ -76,6 +81,11 @@ namespace SimuladorGavitacional
             // Lateral
             // 
             Lateral.BackColor = SystemColors.Control;
+            Lateral.Controls.Add(label5);
+            Lateral.Controls.Add(label4);
+            Lateral.Controls.Add(label3);
+            Lateral.Controls.Add(label2);
+            Lateral.Controls.Add(label1);
             Lateral.Controls.Add(btnGerar);
             Lateral.Controls.Add(numericVelMax);
             Lateral.Controls.Add(numericVelMin);
@@ -90,13 +100,68 @@ namespace SimuladorGavitacional
             Lateral.Dock = DockStyle.Fill;
             Lateral.Location = new Point(0, 163);
             Lateral.Name = "Lateral";
-            Lateral.Size = new Size(599, 446);
+            Lateral.Size = new Size(661, 499);
             Lateral.TabIndex = 2;
             // 
+            // label5
             // 
+            label5.AutoSize = true;
+            label5.BackColor = SystemColors.Control;
+            label5.Font = new Font("Segoe UI", 13F);
+            label5.ForeColor = SystemColors.AppWorkspace;
+            label5.Location = new Point(492, 237);
+            label5.Name = "label5";
+            label5.Size = new Size(94, 30);
+            label5.TabIndex = 15;
+            label5.Text = "Min. -10";
             // 
+            // label4
             // 
+            label4.AutoSize = true;
+            label4.BackColor = SystemColors.Control;
+            label4.Font = new Font("Segoe UI", 13F);
+            label4.ForeColor = SystemColors.AppWorkspace;
+            label4.Location = new Point(492, 278);
+            label4.Name = "label4";
+            label4.Size = new Size(89, 30);
+            label4.TabIndex = 14;
+            label4.Text = "Max. 10";
             // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.BackColor = SystemColors.Control;
+            label3.Font = new Font("Segoe UI", 13F);
+            label3.ForeColor = SystemColors.AppWorkspace;
+            label3.Location = new Point(492, 172);
+            label3.Name = "label3";
+            label3.Size = new Size(113, 30);
+            label3.TabIndex = 13;
+            label3.Text = "Max. 1000";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.BackColor = SystemColors.Control;
+            label2.Font = new Font("Segoe UI", 13F);
+            label2.ForeColor = SystemColors.AppWorkspace;
+            label2.Location = new Point(492, 127);
+            label2.Name = "label2";
+            label2.Size = new Size(73, 30);
+            label2.TabIndex = 12;
+            label2.Text = "Min. 1";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.BackColor = SystemColors.Control;
+            label1.Font = new Font("Segoe UI", 13F);
+            label1.ForeColor = SystemColors.AppWorkspace;
+            label1.Location = new Point(492, 61);
+            label1.Name = "label1";
+            label1.Size = new Size(89, 30);
+            label1.TabIndex = 11;
+            label1.Text = "Max. 50";
             // 
             // btnGerar
             // 
@@ -146,7 +211,7 @@ namespace SimuladorGavitacional
             // 
             numericQuant.Font = new Font("Segoe UI", 13F);
             numericQuant.Location = new Point(398, 59);
-            numericQuant.Maximum = new decimal(new int[] { 25, 0, 0, 0 });
+            numericQuant.Maximum = new decimal(new int[] { 50, 0, 0, 0 });
             numericQuant.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numericQuant.Name = "numericQuant";
             numericQuant.Size = new Size(88, 36);
@@ -218,10 +283,9 @@ namespace SimuladorGavitacional
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(599, 609);
+            ClientSize = new Size(661, 662);
             Controls.Add(Lateral);
             Controls.Add(Cabecalho);
-            MaximumSize = new Size(617, 656);
             MinimumSize = new Size(617, 656);
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
@@ -254,5 +318,10 @@ namespace SimuladorGavitacional
         private NumericUpDown numericQuant;
         private NumericUpDown numericMassaMin;
         private Button btnGerar;
+        private Label label5;
+        private Label label4;
+        private Label label3;
+        private Label label2;
+        private Label label1;
     }
 }

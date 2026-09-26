@@ -30,14 +30,24 @@
         {
             components = new System.ComponentModel.Container();
             panelUniverso = new PanelUniverso();
+            labelIteracoes = new Label();
+            dataGridView1 = new DataGridView();
+            ColNome = new DataGridViewTextBoxColumn();
+            ColMassa = new DataGridViewTextBoxColumn();
+            ColDensidade = new DataGridViewTextBoxColumn();
+            ColPosX = new DataGridViewTextBoxColumn();
+            ColPosY = new DataGridViewTextBoxColumn();
+            ColVelX = new DataGridViewTextBoxColumn();
+            ColVelY = new DataGridViewTextBoxColumn();
             panelController = new Panel();
-            labelVelocidade = new Label();
+            btnDados = new Button();
             trackBar1 = new TrackBar();
-            panel1 = new Panel();
+            panel1 = new PanelUniverso();
             btnParar = new Button();
             btnIniciar = new Button();
             timerUniverso = new System.Windows.Forms.Timer(components);
             panelUniverso.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             panelController.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
             panel1.SuspendLayout();
@@ -47,6 +57,8 @@
             // 
             panelUniverso.BackColor = Color.DimGray;
             panelUniverso.BackgroundImageLayout = ImageLayout.Stretch;
+            panelUniverso.Controls.Add(labelIteracoes);
+            panelUniverso.Controls.Add(dataGridView1);
             panelUniverso.Controls.Add(panelController);
             panelUniverso.Dock = DockStyle.Fill;
             panelUniverso.Location = new Point(0, 0);
@@ -56,10 +68,90 @@
             panelUniverso.TabIndex = 0;
             panelUniverso.Paint += panelUniverso_Paint;
             // 
+            // labelIteracoes
+            // 
+            labelIteracoes.AutoSize = true;
+            labelIteracoes.Font = new Font("Segoe UI", 15F);
+            labelIteracoes.ForeColor = SystemColors.Control;
+            labelIteracoes.Location = new Point(0, 0);
+            labelIteracoes.Name = "labelIteracoes";
+            labelIteracoes.Size = new Size(137, 35);
+            labelIteracoes.TabIndex = 5;
+            labelIteracoes.Text = "X iterações";
+            labelIteracoes.Visible = false;
+            // 
+            // dataGridView1
+            // 
+            dataGridView1.AllowUserToAddRows = false;
+            dataGridView1.AllowUserToDeleteRows = false;
+            dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridView1.BackgroundColor = SystemColors.ControlDarkDark;
+            dataGridView1.BorderStyle = BorderStyle.None;
+            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { ColNome, ColMassa, ColDensidade, ColPosX, ColPosY, ColVelX, ColVelY });
+            dataGridView1.Location = new Point(534, 0);
+            dataGridView1.MaximumSize = new Size(411, 509);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.ReadOnly = true;
+            dataGridView1.RowHeadersWidth = 51;
+            dataGridView1.Size = new Size(411, 509);
+            dataGridView1.TabIndex = 1;
+            dataGridView1.Visible = false;
+            // 
+            // ColNome
+            // 
+            ColNome.HeaderText = "Nome";
+            ColNome.MinimumWidth = 6;
+            ColNome.Name = "ColNome";
+            ColNome.ReadOnly = true;
+            // 
+            // ColMassa
+            // 
+            ColMassa.HeaderText = "Massa";
+            ColMassa.MinimumWidth = 6;
+            ColMassa.Name = "ColMassa";
+            ColMassa.ReadOnly = true;
+            // 
+            // ColDensidade
+            // 
+            ColDensidade.HeaderText = "Densidade";
+            ColDensidade.MinimumWidth = 6;
+            ColDensidade.Name = "ColDensidade";
+            ColDensidade.ReadOnly = true;
+            // 
+            // ColPosX
+            // 
+            ColPosX.HeaderText = "PosX";
+            ColPosX.MinimumWidth = 6;
+            ColPosX.Name = "ColPosX";
+            ColPosX.ReadOnly = true;
+            // 
+            // ColPosY
+            // 
+            ColPosY.HeaderText = "PosY";
+            ColPosY.MinimumWidth = 6;
+            ColPosY.Name = "ColPosY";
+            ColPosY.ReadOnly = true;
+            // 
+            // ColVelX
+            // 
+            ColVelX.HeaderText = "VelX";
+            ColVelX.MinimumWidth = 6;
+            ColVelX.Name = "ColVelX";
+            ColVelX.ReadOnly = true;
+            // 
+            // ColVelY
+            // 
+            ColVelY.HeaderText = "VelY";
+            ColVelY.MinimumWidth = 6;
+            ColVelY.Name = "ColVelY";
+            ColVelY.ReadOnly = true;
+            // 
             // panelController
             // 
             panelController.BackColor = Color.Transparent;
-            panelController.Controls.Add(labelVelocidade);
+            panelController.Controls.Add(btnDados);
             panelController.Controls.Add(trackBar1);
             panelController.Controls.Add(panel1);
             panelController.Dock = DockStyle.Bottom;
@@ -67,17 +159,18 @@
             panelController.Name = "panelController";
             panelController.Size = new Size(945, 94);
             panelController.TabIndex = 0;
+            panelController.Paint += panelController_Paint;
             // 
-            // labelVelocidade
+            // btnDados
             // 
-            labelVelocidade.AutoSize = true;
-            labelVelocidade.BackColor = SystemColors.Control;
-            labelVelocidade.Font = new Font("Segoe UI", 20F);
-            labelVelocidade.Location = new Point(628, 39);
-            labelVelocidade.Name = "labelVelocidade";
-            labelVelocidade.Size = new Size(54, 46);
-            labelVelocidade.TabIndex = 4;
-            labelVelocidade.Text = "1x";
+            btnDados.Anchor = AnchorStyles.Right;
+            btnDados.Location = new Point(791, 26);
+            btnDados.Name = "btnDados";
+            btnDados.Size = new Size(132, 43);
+            btnDados.TabIndex = 4;
+            btnDados.Text = "Mostrar dados";
+            btnDados.UseVisualStyleBackColor = true;
+            btnDados.Click += btnDados_Click;
             // 
             // trackBar1
             // 
@@ -144,6 +237,8 @@
             Text = "Universo";
             Load += FormUniverso_Load;
             panelUniverso.ResumeLayout(false);
+            panelUniverso.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             panelController.ResumeLayout(false);
             panelController.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)trackBar1).EndInit();
@@ -159,7 +254,16 @@
         private Button btnIniciar;
         private PanelUniverso panelUniverso;
         private TrackBar trackBar1;
-        private Panel panel1;
-        private Label labelVelocidade;
+        private DataGridView dataGridView1;
+        private DataGridViewTextBoxColumn ColNome;
+        private DataGridViewTextBoxColumn ColMassa;
+        private DataGridViewTextBoxColumn ColDensidade;
+        private DataGridViewTextBoxColumn ColPosX;
+        private DataGridViewTextBoxColumn ColPosY;
+        private DataGridViewTextBoxColumn ColVelX;
+        private DataGridViewTextBoxColumn ColVelY;
+        private Button btnDados;
+        private PanelUniverso panel1;
+        private Label labelIteracoes;
     }
 }

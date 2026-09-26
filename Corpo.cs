@@ -67,12 +67,6 @@ namespace SimuladorGavitacional
 			double novaPosX = ((this.Massa * this.PosX) + (outroCorpo.Massa * outroCorpo.PosX)) / massaTotal;
 			double novaPosY = ((this.Massa * this.PosY) + (outroCorpo.Massa * outroCorpo.PosY)) / massaTotal;
 
-			//mistura as cores com base na massa dos corpos
-			int r = (int)(((this.Cor.R * this.Massa) + (outroCorpo.Cor.R * outroCorpo.Massa)) / massaTotal);
-			int g = (int)(((this.Cor.G * this.Massa) + (outroCorpo.Cor.G * outroCorpo.Massa)) / massaTotal);
-			int b = (int)(((this.Cor.B * this.Massa) + (outroCorpo.Cor.B * outroCorpo.Massa)) / massaTotal);
-			Color novaCor = Color.FromArgb(Math.Clamp(r, 0, 255), Math.Clamp(g, 0, 255), Math.Clamp(b, 0, 255));
-
 			//mantem o nome do corpo mais massivo
 			if (outroCorpo.Massa > this.Massa)
 			{
@@ -86,7 +80,6 @@ namespace SimuladorGavitacional
 			this.VelY = novaVelY;
 			this.PosX = novaPosX;
 			this.PosY = novaPosY;
-			this.Cor = novaCor;
 		}
 	}
 }

@@ -28,6 +28,11 @@ namespace SimuladorGavitacional
 
         public Universo()
         {
+            //define os limites do corpo
+            DensidadeMin = 0.0899;
+            DensidadeMax = 22590.0;
+
+
             //lê o arquivo com os nomes aleatórios e coloca todos no array de nomes
             string aux = File.ReadAllText("nomes_corpos_simulador.txt");
             Nomes = aux.Split(';');
@@ -189,15 +194,6 @@ namespace SimuladorGavitacional
 
                 }
             }
-
-            GravadorDados gravador = new GravadorArquivoTexto();
-            //pega o caminho completo da localizacao do arquivo txt
-            string caminhoArquivo = Path.GetFullPath(
-                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "posicoes_iniciais.txt")
-            );
-            //grava a posicao inicial de cada corpo em arquivo texto usando a classe abstrata
-            gravador.GravarPosicoesIniciais(Corpos, caminhoArquivo);
-
             //alerta o usuario caso algum corpo nao seja exibido
             if (corposIgnorados > 0)
             {
@@ -407,7 +403,7 @@ namespace SimuladorGavitacional
                     //verifica se houve colisao: distancia entre os centros menor ou igual a soma dos raios
                     if (distancia <= (raioI + raioJ))
                     {
-                        //ao colidirem os corpos se fundem:
+                        //ao colidirem os corpos se fundem
                         //soma as massas, media ponderada da densidade e conserva a quantidade de movimento (Q = m * v)
                         Corpos[i]!.FundirCom(Corpos[j]!, DensidadeMax);
 
@@ -470,6 +466,33 @@ namespace SimuladorGavitacional
 
             //tratar as colisoes caso ocorram
             TratarColisoes();
+        }
+
+        public Corpo[] CopiarCorpos()
+        {
+            Corpo[] copia = new Corpo[Corpos.Length];
+
+            for (int i = 0; i < Corpos.Length; i++)
+            {
+                if (Corpos[i] == null)
+                {
+                    continue;
+                }
+
+                copia[i] = new Corpo
+                {
+                    Nome = Corpos[i].Nome,
+                    Massa = Corpos[i].Massa,
+                    Densidade = Corpos[i].Densidade,
+                    PosX = Corpos[i].PosX,
+                    PosY = Corpos[i].PosY,
+                    VelX = Corpos[i].VelX,
+                    VelY = Corpos[i].VelY,
+                    Cor = Corpos[i].Cor
+                };
+            }
+
+            return copia;
         }
     }
 }
