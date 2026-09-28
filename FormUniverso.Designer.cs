@@ -95,7 +95,7 @@
             dataGridView1.Name = "dataGridView1";
             dataGridView1.ReadOnly = true;
             dataGridView1.RowHeadersWidth = 51;
-            dataGridView1.Size = new Size(411, 509);
+            dataGridView1.Size = new Size(411, 143);
             dataGridView1.TabIndex = 1;
             dataGridView1.Visible = false;
             // 
@@ -170,6 +170,7 @@
             btnDados.TabIndex = 4;
             btnDados.Text = "Mostrar dados";
             btnDados.UseVisualStyleBackColor = true;
+            btnDados.Visible = false;
             btnDados.Click += btnDados_Click;
             // 
             // trackBar1

@@ -36,7 +36,7 @@ namespace SimuladorGavitacional
                         if (c != null)
                         {
                             //escreve os dados formatados do corpo
-                            escritor.WriteLine($"{c.Nome};{c.PosX};{c.PosY};{c.Massa};{c.Densidade};{c.VelX};{c.VelY}");
+                            escritor.WriteLine($"{c.Nome};{c.Massa};{c.Densidade};{c.PosX};{c.PosY};{c.VelX};{c.VelY}");
                         }
                     }
                 }

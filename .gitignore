@@ -2,5 +2,7 @@
 bin/
 obj/
 *.csproj.user
+posicoes_iniciais.txt
+
 
 

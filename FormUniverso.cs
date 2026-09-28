@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 namespace SimuladorGavitacional
 {
@@ -10,6 +11,7 @@ namespace SimuladorGavitacional
         private Corpo[] copia;
         private int IntervaloIteracoes;
         private int qtdIteracoes;
+        //private int contadorGrid;
         public FormUniverso(Universo u)
         {
             //inicializa o formulario e o universo
@@ -90,10 +92,19 @@ namespace SimuladorGavitacional
         //evento tick do timer que executa uma iteracao a cada 16ms
         private void timerUniverso_Tick(object sender, EventArgs e)
         {
-            //incrementa a quantidade de iteracoes e atualiza a tabela com os dados dos corpos
+            
+            //incrementa a quantidade de iteracoes
             qtdIteracoes++;
             labelIteracoes.Text = $"{qtdIteracoes} Iteracoes";
-            AtualizarDataGrid();
+
+            //atualiza a tabela com os dados dos corpos a cada 250ms
+            //contadorGrid++;
+
+            //if (contadorGrid >= 15)
+            //{
+            //    AtualizarDataGrid();
+            //    contadorGrid = 0;
+            //}
 
             //executa a iteracao com o valor de delta tempo de 0.0001 segundos e atualiza o panel
             universo.ExecutarIteracao(deltaTempo);
@@ -137,30 +148,30 @@ namespace SimuladorGavitacional
         }
 
         //metodo para atualizar o dataGrid dinamicamente a cada iteracao
-        public void AtualizarDataGrid()
-        {
-            dataGridView1.Rows.Clear();
+        //public void AtualizarDataGrid()
+        //{
+        //    dataGridView1.Rows.Clear();
 
-            for (int i = 0; i < universo.Corpos.Length; i++)
-            {
-                if (universo.Corpos[i] == null)
-                {
-                    continue;
-                }
+        //    for (int i = 0; i < universo.Corpos.Length; i++)
+        //    {
+        //        if (universo.Corpos[i] == null)
+        //        {
+        //            continue;
+        //        }
 
-                Corpo corpo = universo.Corpos[i];
+        //        Corpo corpo = universo.Corpos[i];
 
-                dataGridView1.Rows.Add(
-                    corpo.Nome,
-                    corpo.Massa,
-                    corpo.PosX.ToString("F2"),
-                    corpo.PosY.ToString("F2"),
-                    corpo.VelX.ToString("F4"),
-                    corpo.VelY.ToString("F4"),
-                    corpo.Densidade
-                );
-            }
-        }
+        //        dataGridView1.Rows.Add(
+        //            corpo.Nome,
+        //            corpo.Massa,
+        //            corpo.PosX.ToString("F2"),
+        //            corpo.PosY.ToString("F2"),
+        //            corpo.VelX.ToString("F4"),
+        //            corpo.VelY.ToString("F4"),
+        //            corpo.Densidade
+        //        );
+        //    }
+        //}
 
         private void btnDados_Click(object sender, EventArgs e)
         {
