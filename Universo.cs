@@ -7,15 +7,17 @@ namespace SimuladorGavitacional
     class Universo
     {
         //array de corpos
-        public Corpo[] Corpos;
+        public Corpo[] Corpos { get; set; }
         //array de nomes
-        public string[] Nomes = new string[100];
+        public string[] Nomes { get; set; } = new string[100];
 
-        public double[] posicoesXIniciais = Array.Empty<double>();
-        public double[] posicoesYIniciais = Array.Empty<double>();
+        public double[] posicoesXIniciais { get; set; } = Array.Empty<double>();
+        public double[] posicoesYIniciais { get; set; } = Array.Empty<double>();
 
         //limites dos corpos
         public double EscalaUniverso { get; set; }
+        public double EscalaVisualCorpos { get; set; }
+        public double FatorEscalaGravitacional { get; set; } = 1e9;
 
         public double MassaMin { get; set; }
         public double MassaMax { get; set; }
@@ -103,7 +105,7 @@ namespace SimuladorGavitacional
                         Corpos[i]!.PosY = margem + random.NextDouble() * (altura - 2 * margem);
 
                         //converte o raio de metros para pixels
-                        float raioPixels = (float)(Corpos[i]!.CalcularRaio() * universo.EscalaUniverso);
+                        float raioPixels = (float)(Corpos[i]!.CalcularRaio() * universo.EscalaVisualCorpos);
 
                         float x = (float)Corpos[i]!.PosX - raioPixels;
                         float y = (float)Corpos[i]!.PosY - raioPixels;
@@ -150,7 +152,7 @@ namespace SimuladorGavitacional
                         Corpos[i]!.PosY = margem + random.NextDouble() * (altura - 2 * margem);
 
                         //converte o raio de metros para pixels
-                        float raioPixels = (float)(Corpos[i]!.CalcularRaio() * universo.EscalaUniverso);
+                        float raioPixels = (float)(Corpos[i]!.CalcularRaio() * universo.EscalaVisualCorpos);
 
                         float x = (float)Corpos[i]!.PosX - raioPixels;
                         float y = (float)Corpos[i]!.PosY - raioPixels;
@@ -249,6 +251,8 @@ namespace SimuladorGavitacional
         {
             //constante gravitacional do formulario: G = 6,674184 * 10^-11
             const double G = 6.674184e-11;
+            //aplica o fator multiplicador na constante gravitacional para tornar a atracao perceptivel na simulacao
+            double gEfetivo = G * FatorEscalaGravitacional;
             double distancia;
             double forcaTotalX = 0;
             double forcaTotalY = 0;
@@ -282,7 +286,7 @@ namespace SimuladorGavitacional
                 }
 
                 //calcula a forca gravitacional entre os corpos: F = G * (m1 * m2) / r^2
-                double forca = G * (Corpos[indice]!.Massa * Corpos[i]!.Massa) / Math.Pow(distancia, 2);
+                double forca = gEfetivo * (Corpos[indice]!.Massa * Corpos[i]!.Massa) / Math.Pow(distancia, 2);
 
                 //calcula a forca exercida sobre o corpo
                 double dx = x2 - x1;
@@ -390,8 +394,8 @@ namespace SimuladorGavitacional
                     }
 
                     //calcula o raio de cada corpo em pixels
-                    double raioI = Corpos[i]!.CalcularRaio() * EscalaUniverso;
-                    double raioJ = Corpos[j]!.CalcularRaio() * EscalaUniverso;
+                    double raioI = Corpos[i]!.CalcularRaio() * EscalaVisualCorpos;
+                    double raioJ = Corpos[j]!.CalcularRaio() * EscalaVisualCorpos;
 
                     //distancia entre os centros dos corpos nos eixos x e y
                     double dx = Corpos[i]!.PosX - Corpos[j]!.PosX;

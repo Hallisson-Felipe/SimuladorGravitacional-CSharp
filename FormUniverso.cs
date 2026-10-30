@@ -25,6 +25,7 @@ namespace SimuladorGavitacional
             //define o deltaTempo e a escala do universo em pixels/metro
             deltaTempo = 0.0005;
             universo.EscalaUniverso = 300;
+            universo.EscalaVisualCorpos = 30;
 
             //contador da quantidade de iteracoes
             qtdIteracoes = 0;
@@ -62,7 +63,7 @@ namespace SimuladorGavitacional
                 if (corpo != null)
                 {
                     //transforma o raio em metros para pixels usando a escalaUniverso
-                    float raioPixels = (float)(corpo.CalcularRaio() * universo.EscalaUniverso);
+                    float raioPixels = (float)(corpo.CalcularRaio() * universo.EscalaVisualCorpos);
 
                     //calculo para garantir que PosX e PosY sejam o centro do corpo
                     //e nao o canto superior esquerdo, que e o padrao do metodo FillEllipse()
