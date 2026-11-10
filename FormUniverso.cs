@@ -8,18 +8,33 @@ namespace SimuladorGavitacional
     {
         private Universo universo;
         private double deltaTempo;
-        private Corpo[] copia;
         private int IntervaloIteracoes;
         private int qtdIteracoes;
+        private readonly bool posicoesCarregadas;
+        private readonly RepositorioSimulacoes? banco;
+        private readonly List<Quadro>? quadrosReplay;
+        private long simulacaoId;
+        private int indiceReplay;
+        private bool operacaoPendente;
+        private bool pararSolicitado;
         //private int contadorGrid;
-        public FormUniverso(Universo u)
+        public FormUniverso(
+            Universo u,
+            bool posicoesCarregadas = false,
+            int iteracoesIniciais = 0,
+            int intervaloIteracoes = 16,
+            RepositorioSimulacoes? banco = null,
+            List<Quadro>? quadrosReplay = null)
         {
             //inicializa o formulario e o universo
             InitializeComponent();
             universo = u;
 
             //define o intervalo entre as iteracoes em ms
-            IntervaloIteracoes = 16;
+            this.posicoesCarregadas = posicoesCarregadas;
+            this.banco = banco;
+            this.quadrosReplay = quadrosReplay;
+            IntervaloIteracoes = intervaloIteracoes;
             timerUniverso.Interval = IntervaloIteracoes;
 
             //define o deltaTempo e a escala do universo em pixels/metro
@@ -28,7 +43,8 @@ namespace SimuladorGavitacional
             universo.EscalaVisualCorpos = 30;
 
             //contador da quantidade de iteracoes
-            qtdIteracoes = 0;
+            qtdIteracoes = iteracoesIniciais;
+            if (quadrosReplay is not null) qtdIteracoes = quadrosReplay[0].Iteracao;
 
             this.WindowState = FormWindowState.Maximized;
         }
@@ -36,15 +52,16 @@ namespace SimuladorGavitacional
 
         private void FormUniverso_Load(object sender, EventArgs e)
         {
-            //gera as posicoes
-            Graphics graphics = panelUniverso.CreateGraphics();
-            universo.GerarPosicoes(panelUniverso.Height, panelUniverso.Width, universo, graphics);
-            graphics.Dispose();
-
-            //faz uma copia do estado inicial do array de corpos
-            copia = universo.CopiarCorpos();
+            if (!posicoesCarregadas)
+            {
+                Graphics graphics = panelUniverso.CreateGraphics();
+                universo.GerarPosicoes(panelUniverso.Height, panelUniverso.Width, universo, graphics);
+                graphics.Dispose();
+            }
 
             //faz um reload no panelUniverso
+            labelIteracoes.Text = $"{qtdIteracoes} Iterações";
+            labelIteracoes.Visible = true;
             panelUniverso.Invalidate();
         }
 
@@ -90,9 +107,28 @@ namespace SimuladorGavitacional
 
         }
 
-        //evento tick do timer que executa uma iteracao a cada 16ms
-        private void timerUniverso_Tick(object sender, EventArgs e)
+        // Executa uma iteração conforme o intervalo configurado na simulação.
+        private async void timerUniverso_Tick(object sender, EventArgs e)
         {
+            // Evita ticks sobrepostos enquanto o quadro atual é gravado no banco.
+            timerUniverso.Stop();
+            if (pararSolicitado) return;
+            if (quadrosReplay is not null)
+            {
+                // Replay usa os estados gravados; não recalcula a física.
+                indiceReplay++;
+                if (indiceReplay >= quadrosReplay.Count)
+                {
+                    btnIniciar.Visible = true;
+                    return;
+                }
+                universo.Corpos = quadrosReplay[indiceReplay].Corpos!;
+                qtdIteracoes = quadrosReplay[indiceReplay].Iteracao;
+                labelIteracoes.Text = $"{qtdIteracoes} Iterações — replay";
+                panelUniverso.Invalidate();
+                timerUniverso.Start();
+                return;
+            }
             
             //incrementa a quantidade de iteracoes
             qtdIteracoes++;
@@ -107,13 +143,72 @@ namespace SimuladorGavitacional
             //    contadorGrid = 0;
             //}
 
-            //executa a iteracao com o valor de delta tempo de 0.0001 segundos e atualiza o panel
+            // Calcula e exibe o estado que será persistido nesta iteração.
             universo.ExecutarIteracao(deltaTempo);
             panelUniverso.Invalidate();
+            operacaoPendente = true;
+            bool gravou = false;
+            try
+            {
+                if (banco is not null)
+                    await banco.GravarAsync(simulacaoId, qtdIteracoes, universo.Corpos);
+                gravou = true;
+            }
+            catch (MySqlConnector.MySqlException ex)
+            {
+                MessageBox.Show($"A gravação falhou na iteração {qtdIteracoes}. " +
+                    $"Os quadros anteriores continuam no banco; feche esta simulação.\n{ex.Message}");
+            }
+            finally
+            {
+                operacaoPendente = false;
+                if (!IsDisposed)
+                {
+                    if (pararSolicitado) Close();
+                    else if (gravou) timerUniverso.Start();
+                }
+            }
         }
 
-        private void btnIniciar_Click(object sender, EventArgs e)
+        private async void btnIniciar_Click(object sender, EventArgs e)
         {
+            if (quadrosReplay is not null && indiceReplay >= quadrosReplay.Count - 1)
+            {
+                indiceReplay = 0;
+                universo.Corpos = quadrosReplay[0].Corpos!;
+                qtdIteracoes = quadrosReplay[0].Iteracao;
+                panelUniverso.Invalidate();
+            }
+            if (banco is not null && simulacaoId == 0)
+            {
+                btnIniciar.Enabled = false;
+                operacaoPendente = true;
+                try
+                {
+                    // A iteração zero captura o estado antes do primeiro movimento.
+                    simulacaoId = await banco.CriarAsync(IntervaloIteracoes, deltaTempo, universo.Corpos);
+                }
+                catch (MySqlConnector.MySqlException ex)
+                {
+                    MessageBox.Show($"Não foi possível criar a simulação:\n{ex.Message}");
+                    return;
+                }
+                finally
+                {
+                    operacaoPendente = false;
+                    if (!IsDisposed)
+                    {
+                        btnIniciar.Enabled = true;
+                        if (pararSolicitado) Close();
+                    }
+                }
+            }
+            if (IsDisposed) return;
+            if (pararSolicitado)
+            {
+                Close();
+                return;
+            }
             //inicia o timer, desabilita o botao e mostra a quantidade de iteracoes
             timerUniverso.Start();
             btnIniciar.Visible = false;
@@ -123,21 +218,38 @@ namespace SimuladorGavitacional
         private void btnParar_Click(object sender, EventArgs e)
         {
             //para o timer
+            pararSolicitado = true;
             timerUniverso.Stop();
 
-            GravadorDados gravador = new GravadorArquivoTexto();
-            //pega o caminho completo da localizacao do arquivo txt
-            string caminhoArquivo = Path.GetFullPath(
-                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "posicoes_iniciais.txt")
-            );
-            //grava a posicao inicial de cada corpo em arquivo texto usando a classe abstrata
-            gravador.GravarPosicoesIniciais(copia, caminhoArquivo, qtdIteracoes, IntervaloIteracoes);
+            // Se uma escrita está em andamento, o retorno do await fechará a janela.
+            if (operacaoPendente)
+            {
+                btnParar.Text = "Parando...";
+                return;
+            }
 
-            //exibe ao usuario que a gravacao foi concluida
-            MessageBox.Show("Dados gravados em: posicoes_iniciais.txt");
+            if (banco is not null || quadrosReplay is not null)
+            {
+                this.Close(); // Os quadros já foram gravados; replay apenas fecha.
+                return;
+            }
 
-            //fecha o formulario de exibicao
-            this.Close();
+            try
+            {
+                GravadorDados gravador = new GravadorArquivoTexto();
+                string caminhoArquivo = Path.GetFullPath(
+                    Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "posicoes_iniciais.txt")
+                );
+
+                // Grava os corpos vivos agora, incluindo posições e velocidades após as iterações.
+                gravador.GravarPosicoesIniciais(universo.Corpos, caminhoArquivo, qtdIteracoes, IntervaloIteracoes);
+                MessageBox.Show($"Estado atual gravado em:\n{caminhoArquivo}");
+                this.Close();
+            }
+            catch (IOException ex)
+            {
+                MessageBox.Show($"Não foi possível salvar a simulação:\n{ex.Message}");
+            }
 
         }
 

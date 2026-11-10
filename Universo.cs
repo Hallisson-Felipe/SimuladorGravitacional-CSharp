@@ -430,20 +430,17 @@ namespace SimuladorGavitacional
             double[] aceleracoesX = new double[Corpos.Length];
             double[] aceleracoesY = new double[Corpos.Length];
 
-            //calcular todas as aceleracoes
-            for (int i = 0; i < Corpos.Length; i++)
+            // Cada cálculo apenas lê os corpos e grava na posição i dos arrays de
+            // aceleração. Assim todos usam o mesmo estado antes do movimento.
+            Parallel.For(0, Corpos.Length, i =>
             {
                 if (Corpos[i] == null)
                 {
-                    continue;
+                    return;
                 }
 
-                double ax, ay;
-                (ax,ay) = CalcularAceleracao(i);
-
-                aceleracoesX[i] = ax;
-                aceleracoesY[i] = ay;
-            }
+                (aceleracoesX[i], aceleracoesY[i]) = CalcularAceleracao(i);
+            });
 
             //atualizar todas as posicoes
             for (int i = 0; i < Corpos.Length; i++)
@@ -468,7 +465,8 @@ namespace SimuladorGavitacional
                 Corpos[i]!.VelY += aceleracoesY[i] * deltaTempo;
             }
 
-            //tratar as colisoes caso ocorram
+            // As fusões alteram o array de corpos; por isso são tratadas após
+            // os cálculos paralelos, em uma única sequência.
             TratarColisoes();
         }
 

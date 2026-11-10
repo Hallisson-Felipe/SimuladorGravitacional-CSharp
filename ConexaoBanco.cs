@@ -1,0 +1,36 @@
+using MySqlConnector;
+
+namespace SimuladorGavitacional;
+
+internal static class ConexaoBanco
+{
+    private static RepositorioSimulacoes? repositorio;
+
+    public static async Task<RepositorioSimulacoes?> ObterAsync(IWin32Window dono)
+    {
+        if (repositorio != null) return repositorio;
+
+        using Form janela = new()
+        {
+            Text = "Senha do MySQL (root)", ClientSize = new Size(300, 110),
+            FormBorderStyle = FormBorderStyle.FixedDialog, StartPosition = FormStartPosition.CenterParent,
+            MaximizeBox = false
+        };
+        TextBox senha = new() { Left = 20, Top = 18, Width = 260, UseSystemPasswordChar = true };
+        Button entrar = new() { Text = "Conectar", Left = 180, Top = 57,
+            Width = 100, DialogResult = DialogResult.OK };
+        janela.Controls.AddRange([senha, entrar]);
+        janela.AcceptButton = entrar;
+        if (janela.ShowDialog(dono) != DialogResult.OK) return null;
+
+        MySqlConnectionStringBuilder dados = new()
+        {
+            Server = "localhost", Port = 3306, UserID = "root",
+            Password = senha.Text, Database = "simulador_gravitacional"
+        };
+        var banco = new RepositorioSimulacoes(dados.ConnectionString);
+        await banco.TestarAsync();
+        repositorio = banco; // Somente em memória durante esta execução.
+        return banco;
+    }
+}

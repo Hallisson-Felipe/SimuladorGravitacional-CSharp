@@ -32,6 +32,7 @@ namespace SimuladorGavitacional
             Titulo = new Label();
             Lateral = new Panel();
             label5 = new Label();
+            btnCarregar = new Button();
             label4 = new Label();
             label3 = new Label();
             label2 = new Label();
@@ -82,6 +83,7 @@ namespace SimuladorGavitacional
             // 
             Lateral.BackColor = SystemColors.Control;
             Lateral.Controls.Add(label5);
+            Lateral.Controls.Add(btnCarregar);
             Lateral.Controls.Add(label4);
             Lateral.Controls.Add(label3);
             Lateral.Controls.Add(label2);
@@ -172,7 +174,18 @@ namespace SimuladorGavitacional
             btnGerar.TabIndex = 10;
             btnGerar.Text = "GERAR";
             btnGerar.UseVisualStyleBackColor = true;
-            btnGerar.Click += btnGerar_Click;
+            btnGerar.Click += btnGerarBanco_Click;
+            //
+            // btnCarregar
+            //
+            btnCarregar.Font = new Font("Segoe UI", 12F);
+            btnCarregar.Location = new Point(198, 420);
+            btnCarregar.Name = "btnCarregar";
+            btnCarregar.Size = new Size(181, 50);
+            btnCarregar.TabIndex = 16;
+            btnCarregar.Text = "CARREGAR";
+            btnCarregar.UseVisualStyleBackColor = true;
+            btnCarregar.Click += btnCarregar_Click;
             // 
             // numericVelMax
             // 
@@ -318,6 +331,7 @@ namespace SimuladorGavitacional
         private NumericUpDown numericQuant;
         private NumericUpDown numericMassaMin;
         private Button btnGerar;
+        private Button btnCarregar;
         private Label label5;
         private Label label4;
         private Label label3;
