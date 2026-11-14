@@ -11,19 +11,19 @@ namespace SimuladorGavitacional
         private int IntervaloIteracoes;
         private int qtdIteracoes;
         private readonly bool posicoesCarregadas;
-        private readonly RepositorioSimulacoes? banco;
+        private readonly GravadorDados? banco;
         private readonly List<Quadro>? quadrosReplay;
         private long simulacaoId;
         private int indiceReplay;
         private bool operacaoPendente;
         private bool pararSolicitado;
-        //private int contadorGrid;
+
         public FormUniverso(
             Universo u,
             bool posicoesCarregadas = false,
             int iteracoesIniciais = 0,
             int intervaloIteracoes = 16,
-            RepositorioSimulacoes? banco = null,
+            GravadorDados? banco = null,
             List<Quadro>? quadrosReplay = null)
         {
             //inicializa o formulario e o universo
@@ -134,15 +134,6 @@ namespace SimuladorGavitacional
             qtdIteracoes++;
             labelIteracoes.Text = $"{qtdIteracoes} Iteracoes";
 
-            //atualiza a tabela com os dados dos corpos a cada 250ms
-            //contadorGrid++;
-
-            //if (contadorGrid >= 15)
-            //{
-            //    AtualizarDataGrid();
-            //    contadorGrid = 0;
-            //}
-
             // Calcula e exibe o estado que será persistido nesta iteração.
             universo.ExecutarIteracao(deltaTempo);
             panelUniverso.Invalidate();
@@ -228,29 +219,7 @@ namespace SimuladorGavitacional
                 return;
             }
 
-            if (banco is not null || quadrosReplay is not null)
-            {
-                this.Close(); // Os quadros já foram gravados; replay apenas fecha.
-                return;
-            }
-
-            try
-            {
-                GravadorDados gravador = new GravadorArquivoTexto();
-                string caminhoArquivo = Path.GetFullPath(
-                    Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "posicoes_iniciais.txt")
-                );
-
-                // Grava os corpos vivos agora, incluindo posições e velocidades após as iterações.
-                gravador.GravarPosicoesIniciais(universo.Corpos, caminhoArquivo, qtdIteracoes, IntervaloIteracoes);
-                MessageBox.Show($"Estado atual gravado em:\n{caminhoArquivo}");
-                this.Close();
-            }
-            catch (IOException ex)
-            {
-                MessageBox.Show($"Não foi possível salvar a simulação:\n{ex.Message}");
-            }
-
+            this.Close();
         }
 
         //evento acionado quando o usuario altera a velocidade da simulacao
@@ -259,32 +228,6 @@ namespace SimuladorGavitacional
             //calcula o deltaTempo com base no valor selecionado pelo usuario
             deltaTempo = 0.0005 * trackBar1.Value / 50.0;
         }
-
-        //metodo para atualizar o dataGrid dinamicamente a cada iteracao
-        //public void AtualizarDataGrid()
-        //{
-        //    dataGridView1.Rows.Clear();
-
-        //    for (int i = 0; i < universo.Corpos.Length; i++)
-        //    {
-        //        if (universo.Corpos[i] == null)
-        //        {
-        //            continue;
-        //        }
-
-        //        Corpo corpo = universo.Corpos[i];
-
-        //        dataGridView1.Rows.Add(
-        //            corpo.Nome,
-        //            corpo.Massa,
-        //            corpo.PosX.ToString("F2"),
-        //            corpo.PosY.ToString("F2"),
-        //            corpo.VelX.ToString("F4"),
-        //            corpo.VelY.ToString("F4"),
-        //            corpo.Densidade
-        //        );
-        //    }
-        //}
 
         private void btnDados_Click(object sender, EventArgs e)
         {

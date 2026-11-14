@@ -9,7 +9,7 @@ public partial class Form1
         if (!ValidarValores()) return;
         try
         {
-            RepositorioSimulacoes? banco = await ConexaoBanco.ObterAsync(this);
+            GravadorDados? banco = await ConexaoBanco.ObterAsync(this);
             if (banco is null) return;
             Universo novo = new()
             {
@@ -29,7 +29,7 @@ public partial class Form1
     {
         try
         {
-            RepositorioSimulacoes? banco = await ConexaoBanco.ObterAsync(this);
+            GravadorDados? banco = await ConexaoBanco.ObterAsync(this);
             if (banco is null) return;
             List<SimulacaoSalva> lista = await banco.ListarAsync();
             if (lista.Count == 0)

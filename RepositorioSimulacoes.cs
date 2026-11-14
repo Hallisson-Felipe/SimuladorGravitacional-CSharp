@@ -11,7 +11,7 @@ internal sealed record Quadro(int Iteracao, Corpo?[] Corpos);
 
 // Cada quadro conserva os índices originais; após uma colisão, o corpo absorvido
 // simplesmente deixa de ter linha nos quadros seguintes.
-internal sealed class RepositorioSimulacoes(string stringConexao)
+internal sealed class RepositorioSimulacoes(string stringConexao) : GravadorDados
 {
     private MySqlConnection NovaConexao() => new(stringConexao);
 
@@ -23,7 +23,7 @@ internal sealed class RepositorioSimulacoes(string stringConexao)
         await comando.ExecuteScalarAsync();
     }
 
-    public async Task<long> CriarAsync(int intervaloMs, double deltaTempo, Corpo?[] corpos)
+    public override async Task<long> CriarAsync(int intervaloMs, double deltaTempo, Corpo?[] corpos)
     {
         await using var db = NovaConexao();
         await db.OpenAsync();
@@ -40,7 +40,7 @@ internal sealed class RepositorioSimulacoes(string stringConexao)
         return id;
     }
 
-    public async Task GravarAsync(long id, int iteracao, Corpo?[] corpos)
+    public override async Task GravarAsync(long id, int iteracao, Corpo?[] corpos)
     {
         await using var db = NovaConexao();
         await db.OpenAsync();
@@ -98,7 +98,7 @@ internal sealed class RepositorioSimulacoes(string stringConexao)
         }
     }
 
-    public async Task<List<SimulacaoSalva>> ListarAsync()
+    public override async Task<List<SimulacaoSalva>> ListarAsync()
     {
         List<SimulacaoSalva> resultado = [];
         await using var db = NovaConexao();
@@ -111,7 +111,7 @@ internal sealed class RepositorioSimulacoes(string stringConexao)
         return resultado;
     }
 
-    public async Task<(int IntervaloMs, double DeltaTempo, List<Quadro> Quadros)> CarregarAsync(long id)
+    public override async Task<(int IntervaloMs, double DeltaTempo, List<Quadro> Quadros)> CarregarAsync(long id)
     {
         await using var db = NovaConexao();
         await db.OpenAsync();

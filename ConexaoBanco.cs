@@ -4,9 +4,9 @@ namespace SimuladorGavitacional;
 
 internal static class ConexaoBanco
 {
-    private static RepositorioSimulacoes? repositorio;
+    private static GravadorDados? repositorio;
 
-    public static async Task<RepositorioSimulacoes?> ObterAsync(IWin32Window dono)
+    public static async Task<GravadorDados?> ObterAsync(IWin32Window dono)
     {
         if (repositorio != null) return repositorio;
 
