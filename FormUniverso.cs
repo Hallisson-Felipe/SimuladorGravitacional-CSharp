@@ -72,6 +72,11 @@ namespace SimuladorGavitacional
             //antialiasing para suavisar as bordas dos corpos
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
+            if (universo.Corpos == null)
+            {
+                return;
+            }
+
             //loop para percorrer os corpos e desenha-los na tela
             for (int i = 0; i < universo.Corpos.Length; i++)
             {
@@ -141,7 +146,7 @@ namespace SimuladorGavitacional
             bool gravou = false;
             try
             {
-                if (banco is not null)
+                if (banco is not null && universo.Corpos is not null)
                     await banco.GravarAsync(simulacaoId, qtdIteracoes, universo.Corpos);
                 gravou = true;
             }
@@ -170,7 +175,7 @@ namespace SimuladorGavitacional
                 qtdIteracoes = quadrosReplay[0].Iteracao;
                 panelUniverso.Invalidate();
             }
-            if (banco is not null && simulacaoId == 0)
+            if (banco is not null && simulacaoId == 0 && universo.Corpos is not null)
             {
                 btnIniciar.Enabled = false;
                 operacaoPendente = true;

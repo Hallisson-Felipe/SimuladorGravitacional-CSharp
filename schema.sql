@@ -1,5 +1,3 @@
-  -- N2: uma simulação contém quadros (iterações); cada quadro contém os
-  -- corpos ainda existentes naquele instante. Grave também a iteração 0.
   CREATE DATABASE IF NOT EXISTS simulador_gravitacional
       CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -31,6 +29,3 @@
           FOREIGN KEY (simulacao_id) REFERENCES simulacoes(id)
           ON DELETE CASCADE
   ) ENGINE = InnoDB;
-
-  -- O índice composto permite carregar os quadros de uma simulação em ordem.
-  -- SELECT * FROM estados_corpos WHERE simulacao_id = ? ORDER BY iteracao, indice_corpo;

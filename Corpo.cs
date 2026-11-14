@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 
 namespace SimuladorGavitacional
 {
-	internal class Corpo
+	public class Corpo
 	{
 
 		public Color Cor { get; set; }

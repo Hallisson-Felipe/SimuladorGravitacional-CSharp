@@ -4,10 +4,10 @@ using System.Drawing.Drawing2D;
 
 namespace SimuladorGavitacional
 {
-    class Universo
+    public class Universo
     {
         //array de corpos
-        public Corpo[] Corpos { get; set; }
+        public Corpo?[]? Corpos { get; set; }
         //array de nomes
         public string[] Nomes { get; set; } = new string[100];
 
@@ -45,7 +45,7 @@ namespace SimuladorGavitacional
         public void GerarCorposAleatorios(int quantidade)
         {
             Random random = new Random();
-            Corpos = new Corpo[quantidade];
+            Corpos = new Corpo?[quantidade];
 
             //laço para gerar os corpos
             for (int i = 0; i < quantidade; i++)
@@ -72,6 +72,11 @@ namespace SimuladorGavitacional
         //metodo para gerars as posiçoes dos corpos no universo
         public void GerarPosicoes(int altura, int largura, Universo universo, Graphics graphics)
         {
+            if (Corpos == null || universo.Corpos == null)
+            {
+                return;
+            }
+
             posicoesXIniciais = new double[universo.Corpos.Length];
             posicoesYIniciais = new double[universo.Corpos.Length];
             int corposIgnorados = 0;
@@ -207,6 +212,11 @@ namespace SimuladorGavitacional
         //metodo para verificar se um corpo nao esta sendo criado em cima de outro
         public bool ValidarPosicao(Region regiao, int indice, Graphics graphics)
         {
+            if (Corpos == null)
+            {
+                return true;
+            }
+
             //laco para percorrer todas ao posicoes anteriores ao indice do corpo verificado
             for(int i = 0; i< indice; i++)
             {
@@ -258,7 +268,7 @@ namespace SimuladorGavitacional
             double forcaTotalY = 0;
 
             //verifica se o corpo existe
-            if (Corpos[indice] == null)
+            if (Corpos == null || Corpos[indice] == null)
             {
                 return (0, 0);
             }
@@ -312,7 +322,7 @@ namespace SimuladorGavitacional
         public (double aceleracaoX, double aceleracaoY) CalcularAceleracao(int indice)
         {
             //verifica se o corpo existe
-            if (Corpos[indice] == null)
+            if (Corpos == null || Corpos[indice] == null)
             {
                 return (0, 0);
             }
@@ -333,7 +343,7 @@ namespace SimuladorGavitacional
         public void AtualizarVelocidade(int indice, double deltaTempo)
         {
             //verifica se o corpo existe
-            if (Corpos[indice] == null)
+            if (Corpos == null || Corpos[indice] == null)
             {
                 return;
             }
@@ -351,7 +361,7 @@ namespace SimuladorGavitacional
         public void AtualizarPosicao(int indice, double deltaTempo, double aceleracaoX, double aceleracaoY)
         {
             //verifica se o corpo existe
-            if (Corpos[indice] == null)
+            if (Corpos == null || Corpos[indice] == null)
             {
                 return;
             }
@@ -375,6 +385,11 @@ namespace SimuladorGavitacional
         //metodo para verificar e tratar colisoes entre os corpos
         public void TratarColisoes()
         {
+            if (Corpos == null)
+            {
+                return;
+            }
+
             //percorre todos os corpos para verificar possíveis colisões
             for (int i = 0; i < Corpos.Length; i++)
             {
@@ -427,6 +442,11 @@ namespace SimuladorGavitacional
 
         public void ExecutarIteracao(double deltaTempo)
         {
+            if (Corpos == null)
+            {
+                return;
+            }
+
             double[] aceleracoesX = new double[Corpos.Length];
             double[] aceleracoesY = new double[Corpos.Length];
 
@@ -470,27 +490,33 @@ namespace SimuladorGavitacional
             TratarColisoes();
         }
 
-        public Corpo[] CopiarCorpos()
+        public Corpo?[] CopiarCorpos()
         {
-            Corpo[] copia = new Corpo[Corpos.Length];
+            if (Corpos == null)
+            {
+                return new Corpo?[0];
+            }
+
+            Corpo?[] copia = new Corpo?[Corpos.Length];
 
             for (int i = 0; i < Corpos.Length; i++)
             {
-                if (Corpos[i] == null)
+                Corpo? corpo = Corpos[i];
+                if (corpo == null)
                 {
                     continue;
                 }
 
                 copia[i] = new Corpo
                 {
-                    Nome = Corpos[i].Nome,
-                    Massa = Corpos[i].Massa,
-                    Densidade = Corpos[i].Densidade,
-                    PosX = Corpos[i].PosX,
-                    PosY = Corpos[i].PosY,
-                    VelX = Corpos[i].VelX,
-                    VelY = Corpos[i].VelY,
-                    Cor = Corpos[i].Cor
+                    Nome = corpo.Nome,
+                    Massa = corpo.Massa,
+                    Densidade = corpo.Densidade,
+                    PosX = corpo.PosX,
+                    PosY = corpo.PosY,
+                    VelX = corpo.VelX,
+                    VelY = corpo.VelY,
+                    Cor = corpo.Cor
                 };
             }
 
