@@ -40,6 +40,7 @@ namespace SimuladorGavitacional
                 Database = "simulador_gravitacional"
             };
             RepositorioSimulacoes banco = new RepositorioSimulacoes(dados.ConnectionString);
+            await banco.InicializarBancoAsync();
             await banco.TestarAsync();
             repositorio = banco; // Somente em memória durante esta execução.
             return banco;
