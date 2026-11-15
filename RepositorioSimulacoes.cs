@@ -1,3 +1,4 @@
+using System.Text;
 using MySqlConnector;
 
 namespace SimuladorGavitacional
@@ -123,80 +124,144 @@ namespace SimuladorGavitacional
             await comando.ExecuteScalarAsync();
         }
 
-        public override async Task<long> CriarAsync(int intervaloMs, double deltaTempo, Corpo?[] corpos)
+        public override async Task<long> SalvarSimulacaoAsync(
+            int intervaloMs,
+            double deltaTempo,
+            int ultimaIteracao,
+            string caminhoArquivo)
         {
             await using var db = NovaConexao();
             await db.OpenAsync();
-            // Metadados e quadro zero devem entrar juntos: sem um deles, o replay ficaria incompleto.
+
+            // Metadados, estados dos corpos e última iteração entram na mesma transação
+            // para garantir que nenhuma simulação fique incompleta no banco.
             await using var transacao = await db.BeginTransactionAsync();
-            await using var comando = new MySqlCommand(
+
+            await using var cmdSimulacao = new MySqlCommand(
                 "INSERT INTO simulacoes (intervalo_ms, delta_tempo_s) VALUES (@intervalo, @delta)", db, transacao);
-            comando.Parameters.AddWithValue("@intervalo", intervaloMs);
-            comando.Parameters.AddWithValue("@delta", deltaTempo);
-            await comando.ExecuteNonQueryAsync();
-            long id = comando.LastInsertedId;
-            await InserirCorposAsync(db, transacao, id, 0, corpos);
+            cmdSimulacao.Parameters.AddWithValue("@intervalo", intervaloMs);
+            cmdSimulacao.Parameters.AddWithValue("@delta", deltaTempo);
+            await cmdSimulacao.ExecuteNonQueryAsync();
+
+            long id = cmdSimulacao.LastInsertedId;
+
+            await InserirEstadosEmLotesAsync(db, transacao, id, caminhoArquivo);
+
+            await using var cmdAtualizar = new MySqlCommand(
+                "UPDATE simulacoes SET ultima_iteracao=@iteracao WHERE id=@id", db, transacao);
+            cmdAtualizar.Parameters.AddWithValue("@iteracao", ultimaIteracao);
+            cmdAtualizar.Parameters.AddWithValue("@id", id);
+            await cmdAtualizar.ExecuteNonQueryAsync();
+
             await transacao.CommitAsync();
             return id;
         }
 
-        public override async Task GravarAsync(long id, int iteracao, Corpo?[] corpos)
+        // Lê o arquivo TXT local progressivamente e insere os registros no MySQL em lotes.
+        private static async Task InserirEstadosEmLotesAsync(
+            MySqlConnection db,
+            MySqlTransaction tx,
+            long simulacaoId,
+            string caminhoArquivo)
         {
-            await using var db = NovaConexao();
-            await db.OpenAsync();
-            // Confirma o quadro e o contador na mesma transação para não indicar
-            // uma iteração cujos corpos ainda não foram gravados.
-            await using var transacao = await db.BeginTransactionAsync();
-            await InserirCorposAsync(db, transacao, id, iteracao, corpos);
-            await using var comando = new MySqlCommand(
-                "UPDATE simulacoes SET ultima_iteracao=@iteracao WHERE id=@id", db, transacao);
-            comando.Parameters.AddWithValue("@iteracao", iteracao);
-            comando.Parameters.AddWithValue("@id", id);
-            await comando.ExecuteNonQueryAsync();
-            await transacao.CommitAsync();
+            const int tamanhoLote = 200;
+
+            using StreamReader leitor = new StreamReader(caminhoArquivo, Encoding.UTF8);
+
+            List<string> valoresSql = new List<string>(tamanhoLote);
+            using MySqlCommand comando = new MySqlCommand();
+            comando.Connection = db;
+            comando.Transaction = tx;
+
+            int iteracaoAtual = 0;
+            int indiceNoLote = 0;
+            string? linha;
+
+            while ((linha = await leitor.ReadLineAsync()) != null)
+            {
+                if (string.IsNullOrWhiteSpace(linha))
+                {
+                    continue;
+                }
+
+                string[] partes = linha.Split(';');
+
+                if (partes[0] == "ITERACAO")
+                {
+                    iteracaoAtual = int.Parse(partes[1]);
+                    continue;
+                }
+
+                if (partes[0] != "CORPO")
+                {
+                    continue;
+                }
+
+                int indiceCorpo = int.Parse(partes[1]);
+                string nome = partes[2];
+                double massa = double.Parse(partes[3]);
+                double densidade = double.Parse(partes[4]);
+                double posX = double.Parse(partes[5]);
+                double posY = double.Parse(partes[6]);
+                double velX = double.Parse(partes[7]);
+                double velY = double.Parse(partes[8]);
+                int corArgb = int.Parse(partes[9]);
+
+                string pIt = "@it" + indiceNoLote;
+                string pInd = "@ind" + indiceNoLote;
+                string pNome = "@nome" + indiceNoLote;
+                string pMassa = "@massa" + indiceNoLote;
+                string pDens = "@dens" + indiceNoLote;
+                string pX = "@x" + indiceNoLote;
+                string pY = "@y" + indiceNoLote;
+                string pVx = "@vx" + indiceNoLote;
+                string pVy = "@vy" + indiceNoLote;
+                string pCor = "@cor" + indiceNoLote;
+
+                valoresSql.Add(
+                    $"(@id, {pIt}, {pInd}, {pNome}, {pMassa}, {pDens}, {pX}, {pY}, {pVx}, {pVy}, {pCor})");
+
+                comando.Parameters.AddWithValue(pIt, iteracaoAtual);
+                comando.Parameters.AddWithValue(pInd, indiceCorpo);
+                comando.Parameters.AddWithValue(pNome, nome);
+                comando.Parameters.AddWithValue(pMassa, massa);
+                comando.Parameters.AddWithValue(pDens, densidade);
+                comando.Parameters.AddWithValue(pX, posX);
+                comando.Parameters.AddWithValue(pY, posY);
+                comando.Parameters.AddWithValue(pVx, velX);
+                comando.Parameters.AddWithValue(pVy, velY);
+                comando.Parameters.AddWithValue(pCor, corArgb);
+
+                indiceNoLote++;
+
+                if (indiceNoLote >= tamanhoLote)
+                {
+                    await ExecutarLoteAsync(comando, simulacaoId, valoresSql);
+                    valoresSql.Clear();
+                    comando.Parameters.Clear();
+                    indiceNoLote = 0;
+                }
+            }
+
+            if (valoresSql.Count > 0)
+            {
+                await ExecutarLoteAsync(comando, simulacaoId, valoresSql);
+            }
         }
 
-        private static async Task InserirCorposAsync(MySqlConnection db, MySqlTransaction tx,
-            long id, int iteracao, Corpo?[] corpos)
+        private static async Task ExecutarLoteAsync(
+            MySqlCommand comando,
+            long simulacaoId,
+            List<string> valoresSql)
         {
-            const string sql =
+            comando.Parameters.AddWithValue("@id", simulacaoId);
+            comando.CommandText =
                 "INSERT INTO estados_corpos " +
                 "(simulacao_id, iteracao, indice_corpo, nome, massa_kg, densidade_kg_m3, " +
-                "pos_x, pos_y, vel_x_m_s, vel_y_m_s, cor_argb) " +
-                "VALUES (@id, @it, @indice, @nome, @massa, @densidade, @x, @y, @vx, @vy, @cor)";
+                "pos_x, pos_y, vel_x_m_s, vel_y_m_s, cor_argb) VALUES " +
+                string.Join(", ", valoresSql);
 
-            await using var comando = new MySqlCommand(sql, db, tx);
-            comando.Parameters.Add("@id", MySqlDbType.UInt64);
-            comando.Parameters.Add("@it", MySqlDbType.UInt32);
-            comando.Parameters.Add("@indice", MySqlDbType.UInt32);
-            comando.Parameters.Add("@nome", MySqlDbType.VarChar);
-            comando.Parameters.Add("@massa", MySqlDbType.Double);
-            comando.Parameters.Add("@densidade", MySqlDbType.Double);
-            comando.Parameters.Add("@x", MySqlDbType.Double);
-            comando.Parameters.Add("@y", MySqlDbType.Double);
-            comando.Parameters.Add("@vx", MySqlDbType.Double);
-            comando.Parameters.Add("@vy", MySqlDbType.Double);
-            comando.Parameters.Add("@cor", MySqlDbType.Int32);
-
-            for (int i = 0; i < corpos.Length; i++)
-            {
-                Corpo? c = corpos[i];
-                // O índice mantém a identidade do corpo entre quadros; null indica
-                // que ele foi absorvido em uma colisão anterior.
-                if (c == null) continue;
-                comando.Parameters["@id"].Value = id;
-                comando.Parameters["@it"].Value = iteracao;
-                comando.Parameters["@indice"].Value = i;
-                comando.Parameters["@nome"].Value = c.Nome;
-                comando.Parameters["@massa"].Value = c.Massa;
-                comando.Parameters["@densidade"].Value = c.Densidade;
-                comando.Parameters["@x"].Value = c.PosX;
-                comando.Parameters["@y"].Value = c.PosY;
-                comando.Parameters["@vx"].Value = c.VelX;
-                comando.Parameters["@vy"].Value = c.VelY;
-                comando.Parameters["@cor"].Value = c.Cor.ToArgb();
-                await comando.ExecuteNonQueryAsync();
-            }
+            await comando.ExecuteNonQueryAsync();
         }
 
         public override async Task<List<SimulacaoSalva>> ListarAsync()

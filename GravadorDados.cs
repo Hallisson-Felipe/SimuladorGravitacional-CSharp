@@ -3,11 +3,12 @@ namespace SimuladorGavitacional
     // Contrato abstrato de persistência das simulações.
     public abstract class GravadorDados
     {
-        // Cria uma nova simulação e registra o estado inicial dos corpos.
-        public abstract Task<long> CriarAsync(int intervaloMs, double deltaTempo, Corpo?[] corpos);
-
-        // Grava os estados dos corpos em uma iteração da simulação.
-        public abstract Task GravarAsync(long id, int iteracao, Corpo?[] corpos);
+        // Persiste a simulação completa no banco a partir do arquivo local temporário.
+        public abstract Task<long> SalvarSimulacaoAsync(
+            int intervaloMs,
+            double deltaTempo,
+            int ultimaIteracao,
+            string caminhoArquivo);
 
         // Lista as simulações armazenadas.
         public abstract Task<List<SimulacaoSalva>> ListarAsync();

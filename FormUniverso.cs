@@ -13,10 +13,10 @@ namespace SimuladorGavitacional
         private readonly bool posicoesCarregadas;
         private readonly GravadorDados? banco;
         private readonly List<Quadro>? quadrosReplay;
-        private long simulacaoId;
         private int indiceReplay;
-        private bool operacaoPendente;
-        private bool pararSolicitado;
+        private RegistroLocalSimulacao? registroLocal;
+        private bool salvandoNoBanco;
+        private bool simulacaoFinalizada;
 
         public FormUniverso(
             Universo u,
@@ -47,6 +47,7 @@ namespace SimuladorGavitacional
             if (quadrosReplay is not null) qtdIteracoes = quadrosReplay[0].Iteracao;
 
             this.WindowState = FormWindowState.Maximized;
+            this.FormClosing += FormUniverso_FormClosing;
         }
 
 
@@ -113,17 +114,17 @@ namespace SimuladorGavitacional
         }
 
         // Executa uma iteração conforme o intervalo configurado na simulação.
-        private async void timerUniverso_Tick(object sender, EventArgs e)
+        private void timerUniverso_Tick(object sender, EventArgs e)
         {
-            // Evita ticks sobrepostos enquanto o quadro atual é gravado no banco.
-            timerUniverso.Stop();
-            if (pararSolicitado) return;
+            if (salvandoNoBanco) return;
+
             if (quadrosReplay is not null)
             {
                 // Replay usa os estados gravados; não recalcula a física.
                 indiceReplay++;
                 if (indiceReplay >= quadrosReplay.Count)
                 {
+                    timerUniverso.Stop();
                     btnIniciar.Visible = true;
                     return;
                 }
@@ -131,7 +132,6 @@ namespace SimuladorGavitacional
                 qtdIteracoes = quadrosReplay[indiceReplay].Iteracao;
                 labelIteracoes.Text = $"{qtdIteracoes} Iterações — replay";
                 panelUniverso.Invalidate();
-                timerUniverso.Start();
                 return;
             }
             
@@ -139,35 +139,20 @@ namespace SimuladorGavitacional
             qtdIteracoes++;
             labelIteracoes.Text = $"{qtdIteracoes} Iteracoes";
 
-            // Calcula e exibe o estado que será persistido nesta iteração.
+            // Calcula, exibe e registra localmente o estado desta iteração, sem acessar o MySQL.
             universo.ExecutarIteracao(deltaTempo);
             panelUniverso.Invalidate();
-            operacaoPendente = true;
-            bool gravou = false;
-            try
+
+            if (registroLocal != null)
             {
-                if (banco is not null && universo.Corpos is not null)
-                    await banco.GravarAsync(simulacaoId, qtdIteracoes, universo.Corpos);
-                gravou = true;
-            }
-            catch (MySqlConnector.MySqlException ex)
-            {
-                MessageBox.Show($"A gravação falhou na iteração {qtdIteracoes}. " +
-                    $"Os quadros anteriores continuam no banco; feche esta simulação.\n{ex.Message}");
-            }
-            finally
-            {
-                operacaoPendente = false;
-                if (!IsDisposed)
-                {
-                    if (pararSolicitado) Close();
-                    else if (gravou) timerUniverso.Start();
-                }
+                registroLocal.RegistrarIteracao(qtdIteracoes, universo.Corpos);
             }
         }
 
-        private async void btnIniciar_Click(object sender, EventArgs e)
+        private void btnIniciar_Click(object sender, EventArgs e)
         {
+            if (salvandoNoBanco) return;
+
             if (quadrosReplay is not null && indiceReplay >= quadrosReplay.Count - 1)
             {
                 indiceReplay = 0;
@@ -175,56 +160,124 @@ namespace SimuladorGavitacional
                 qtdIteracoes = quadrosReplay[0].Iteracao;
                 panelUniverso.Invalidate();
             }
-            if (banco is not null && simulacaoId == 0 && universo.Corpos is not null)
+
+            if (banco is not null && (registroLocal == null || !registroLocal.EstaAberto))
             {
-                btnIniciar.Enabled = false;
-                operacaoPendente = true;
                 try
                 {
-                    // A iteração zero captura o estado antes do primeiro movimento.
-                    simulacaoId = await banco.CriarAsync(IntervaloIteracoes, deltaTempo, universo.Corpos);
+                    if (registroLocal == null)
+                    {
+                        registroLocal = new RegistroLocalSimulacao();
+                    }
+
+                    // Limpa/sobrescreve o arquivo temporário e grava a iteração zero (estado inicial).
+                    registroLocal.Iniciar();
+                    registroLocal.RegistrarIteracao(0, universo.Corpos);
+                    simulacaoFinalizada = false;
                 }
-                catch (MySqlConnector.MySqlException ex)
+                catch (IOException ex)
                 {
-                    MessageBox.Show($"Não foi possível criar a simulação:\n{ex.Message}");
+                    registroLocal?.Fechar();
+                    registroLocal = null;
+                    MessageBox.Show($"Não foi possível iniciar o registro local da simulação:\n{ex.Message}");
                     return;
                 }
-                finally
-                {
-                    operacaoPendente = false;
-                    if (!IsDisposed)
-                    {
-                        btnIniciar.Enabled = true;
-                        if (pararSolicitado) Close();
-                    }
-                }
             }
-            if (IsDisposed) return;
-            if (pararSolicitado)
-            {
-                Close();
-                return;
-            }
+
             //inicia o timer, desabilita o botao e mostra a quantidade de iteracoes
             timerUniverso.Start();
             btnIniciar.Visible = false;
             labelIteracoes.Visible = true;
         }
 
-        private void btnParar_Click(object sender, EventArgs e)
+        private async void btnParar_Click(object sender, EventArgs e)
         {
-            //para o timer
-            pararSolicitado = true;
+            // Para novas iterações imediatamente.
             timerUniverso.Stop();
 
-            // Se uma escrita está em andamento, o retorno do await fechará a janela.
-            if (operacaoPendente)
+            if (salvandoNoBanco) return;
+
+            if (banco == null || registroLocal == null || simulacaoFinalizada)
             {
-                btnParar.Text = "Parando...";
+                this.Close();
                 return;
             }
 
-            this.Close();
+            await FinalizarEPersistirAsync();
+
+            if (!IsDisposed)
+            {
+                this.Close();
+            }
+        }
+
+        private async void FormUniverso_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            timerUniverso.Stop();
+
+            // Impede o fechamento enquanto a persistência no MySQL estiver em andamento.
+            if (salvandoNoBanco)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            // Se o usuário fechar a janela diretamente pelo X, tenta persistir no MySQL antes de encerrar.
+            if (banco != null && registroLocal != null && !simulacaoFinalizada)
+            {
+                e.Cancel = true;
+                await FinalizarEPersistirAsync();
+
+                if (!IsDisposed)
+                {
+                    this.Close();
+                }
+                return;
+            }
+
+            registroLocal?.Fechar();
+        }
+
+        private async Task FinalizarEPersistirAsync()
+        {
+            if (banco == null || registroLocal == null)
+            {
+                return;
+            }
+
+            salvandoNoBanco = true;
+            btnParar.Enabled = false;
+            btnIniciar.Enabled = false;
+            btnParar.Text = "Salvando...";
+
+            try
+            {
+                // Fecha o escritor local para liberar o arquivo para leitura.
+                registroLocal.Fechar();
+
+                // Persiste toda a simulação no MySQL em lotes dentro de uma transação.
+                await banco.SalvarSimulacaoAsync(
+                    IntervaloIteracoes,
+                    deltaTempo,
+                    qtdIteracoes,
+                    registroLocal.CaminhoArquivo);
+            }
+            catch (Exception ex) when (ex is MySqlConnector.MySqlException or IOException)
+            {
+                MessageBox.Show($"Não foi possível salvar a simulação no MySQL:\n{ex.Message}");
+            }
+            finally
+            {
+                // Encerra o ciclo desta janela mesmo em caso de falha, preservando o TXT.
+                simulacaoFinalizada = true;
+                salvandoNoBanco = false;
+                if (!IsDisposed)
+                {
+                    btnParar.Enabled = true;
+                    btnIniciar.Enabled = true;
+                    btnParar.Text = "Parar";
+                }
+            }
         }
 
         //evento acionado quando o usuario altera a velocidade da simulacao
