@@ -6,6 +6,7 @@ namespace SimuladorGavitacional
     {
         public static GravadorDados? repositorio { get; set; }
 
+        //solicita a senha do MySQL, inicializa o banco se necessario e retorna o gravador
         public static async Task<GravadorDados?> ObterAsync(IWin32Window dono)
         {
             if (repositorio != null) return repositorio;
@@ -42,7 +43,7 @@ namespace SimuladorGavitacional
             RepositorioSimulacoes banco = new RepositorioSimulacoes(dados.ConnectionString);
             await banco.InicializarBancoAsync();
             await banco.TestarAsync();
-            repositorio = banco; // Somente em memória durante esta execução.
+            repositorio = banco; // Somente em memoria durante esta execucao.
             return banco;
         }
     }

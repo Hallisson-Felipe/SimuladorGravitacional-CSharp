@@ -85,7 +85,7 @@ namespace SimuladorGavitacional
 
                 if (corpo != null)
                 {
-                    //transforma o raio em metros para pixels usando a escalaUniverso
+                    //transforma o raio em metros para pixels usando a escala visual dos corpos
                     float raioPixels = (float)(corpo.CalcularRaio() * universo.EscalaVisualCorpos);
 
                     //calculo para garantir que PosX e PosY sejam o centro do corpo
@@ -113,14 +113,14 @@ namespace SimuladorGavitacional
 
         }
 
-        // Executa uma iteração conforme o intervalo configurado na simulação.
+        //executa uma iteracao conforme o intervalo configurado na simulacao
         private void timerUniverso_Tick(object sender, EventArgs e)
         {
             if (salvandoNoBanco) return;
 
             if (quadrosReplay is not null)
             {
-                // Replay usa os estados gravados; não recalcula a física.
+                //replay usa os estados gravados; nao recalcula a fisica
                 indiceReplay++;
                 if (indiceReplay >= quadrosReplay.Count)
                 {
@@ -139,7 +139,7 @@ namespace SimuladorGavitacional
             qtdIteracoes++;
             labelIteracoes.Text = $"{qtdIteracoes} Iteracoes";
 
-            // Calcula, exibe e registra localmente o estado desta iteração, sem acessar o MySQL.
+            //calcula, exibe e registra localmente o estado desta iteracao, sem acessar o MySQL
             universo.ExecutarIteracao(deltaTempo);
             panelUniverso.Invalidate();
 
@@ -170,7 +170,7 @@ namespace SimuladorGavitacional
                         registroLocal = new RegistroLocalSimulacao();
                     }
 
-                    // Limpa/sobrescreve o arquivo temporário e grava a iteração zero (estado inicial).
+                    //limpa/sobrescreve o arquivo temporario e grava a iteracao zero (estado inicial)
                     registroLocal.Iniciar();
                     registroLocal.RegistrarIteracao(0, universo.Corpos);
                     simulacaoFinalizada = false;
@@ -184,7 +184,7 @@ namespace SimuladorGavitacional
                 }
             }
 
-            //inicia o timer, desabilita o botao e mostra a quantidade de iteracoes
+            //inicia o timer, oculta o botao iniciar e mostra a quantidade de iteracoes
             timerUniverso.Start();
             btnIniciar.Visible = false;
             labelIteracoes.Visible = true;
@@ -192,7 +192,7 @@ namespace SimuladorGavitacional
 
         private async void btnParar_Click(object sender, EventArgs e)
         {
-            // Para novas iterações imediatamente.
+            //para novas iteracoes imediatamente
             timerUniverso.Stop();
 
             if (salvandoNoBanco) return;
@@ -215,14 +215,14 @@ namespace SimuladorGavitacional
         {
             timerUniverso.Stop();
 
-            // Impede o fechamento enquanto a persistência no MySQL estiver em andamento.
+            //impede o fechamento enquanto a persistencia no MySQL estiver em andamento
             if (salvandoNoBanco)
             {
                 e.Cancel = true;
                 return;
             }
 
-            // Se o usuário fechar a janela diretamente pelo X, tenta persistir no MySQL antes de encerrar.
+            //se o usuario fechar a janela diretamente pelo X, tenta persistir no MySQL antes de encerrar
             if (banco != null && registroLocal != null && !simulacaoFinalizada)
             {
                 e.Cancel = true;
@@ -252,10 +252,10 @@ namespace SimuladorGavitacional
 
             try
             {
-                // Fecha o escritor local para liberar o arquivo para leitura.
+                //fecha o escritor local para liberar o arquivo para leitura
                 registroLocal.Fechar();
 
-                // Persiste toda a simulação no MySQL em lotes dentro de uma transação.
+                //persiste toda a simulacao no MySQL em lotes dentro de uma transacao
                 await banco.SalvarSimulacaoAsync(
                     IntervaloIteracoes,
                     deltaTempo,
@@ -268,7 +268,7 @@ namespace SimuladorGavitacional
             }
             finally
             {
-                // Encerra o ciclo desta janela mesmo em caso de falha, preservando o TXT.
+                //encerra o ciclo desta janela mesmo em caso de falha, preservando o TXT
                 simulacaoFinalizada = true;
                 salvandoNoBanco = false;
                 if (!IsDisposed)

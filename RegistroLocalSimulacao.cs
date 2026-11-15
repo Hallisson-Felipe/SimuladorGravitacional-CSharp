@@ -3,8 +3,8 @@ using System.Text;
 
 namespace SimuladorGavitacional
 {
-    // Registra os estados da simulação em um arquivo texto local (simulacao_temp.txt)
-    // para evitar acessos ao MySQL durante a execução da física.
+    //registra os estados da simulacao em um arquivo texto local (simulacao_temp.txt)
+    //para evitar acessos ao MySQL durante a execucao da fisica
     public class RegistroLocalSimulacao
     {
         public string CaminhoArquivo { get; set; }
@@ -24,8 +24,8 @@ namespace SimuladorGavitacional
             return Path.Combine(AppContext.BaseDirectory, "simulacao_temp.txt");
         }
 
-        // Garante que o arquivo temporário exista ao iniciar o programa,
-        // sem apagar dados pendentes caso já exista conteúdo.
+        //garante que o arquivo temporario exista ao iniciar o programa,
+        //sem apagar dados pendentes caso ja exista conteudo
         public static void GarantirArquivoExiste()
         {
             string caminho = ObterCaminhoPadrao();
@@ -35,16 +35,16 @@ namespace SimuladorGavitacional
             }
         }
 
-        // Abre o arquivo em UTF-8 para gravação incremental da nova simulação,
-        // sobrescrevendo qualquer conteúdo anterior.
+        //abre o arquivo em UTF-8 para gravacao incremental da nova simulacao,
+        //sobrescrevendo qualquer conteudo anterior
         public void Iniciar()
         {
             Fechar();
             escritor = new StreamWriter(CaminhoArquivo, false, Encoding.UTF8);
         }
 
-        // Grava no arquivo todos os corpos vivos da iteração informada,
-        // preservando o índice original de cada corpo no universo.
+        //grava no arquivo todos os corpos vivos da iteracao informada,
+        //preservando o indice original de cada corpo no universo
         public void RegistrarIteracao(int iteracao, Corpo?[]? corpos)
         {
             if (escritor == null || corpos == null)
@@ -70,7 +70,7 @@ namespace SimuladorGavitacional
             escritor.WriteLine();
         }
 
-        // Descarrega os dados em buffer e fecha o StreamWriter.
+        //descarrega os dados em buffer e fecha o StreamWriter
         public void Fechar()
         {
             if (escritor != null)
@@ -81,8 +81,8 @@ namespace SimuladorGavitacional
             }
         }
 
-        // Limpa o conteúdo do arquivo temporário após confirmação de gravação no banco,
-        // mantendo o arquivo existente para reutilização nas próximas simulações.
+        //limpa o conteudo do arquivo temporario apos confirmacao de gravacao no banco,
+        //mantendo o arquivo existente para reutilizacao nas proximas simulacoes
         public void Excluir()
         {
             Fechar();

@@ -4,6 +4,7 @@ namespace SimuladorGavitacional
 {
     public partial class Form1
     {
+        //conecta ao banco, gera os corpos aleatorios e abre a janela da simulacao
         private async void btnGerarBanco_Click(object sender, EventArgs e)
         {
             if (!ValidarValores()) return;
@@ -27,6 +28,7 @@ namespace SimuladorGavitacional
             }
         }
 
+        //lista as simulacoes salvas no MySQL e abre a selecionada em modo replay
         private async void btnCarregar_Click(object sender, EventArgs e)
         {
             try
@@ -69,6 +71,7 @@ namespace SimuladorGavitacional
                     MessageBox.Show("Esta simulação não contém quadros para reprodução.");
                     return;
                 }
+                //abre o universo apenas para reproduzir os quadros gravados
                 Universo universoReplay = new Universo { Corpos = carregada.Quadros[0].Corpos };
                 new FormUniverso(universoReplay, posicoesCarregadas: true,
                     intervaloIteracoes: carregada.IntervaloMs, quadrosReplay: carregada.Quadros).Show();

@@ -35,19 +35,19 @@ namespace SimuladorGavitacional
             DensidadeMax = 22590.0;
 
 
-            //lê o arquivo com os nomes aleatórios e coloca todos no array de nomes
+            //le o arquivo com os nomes aleatorios e coloca todos no array de nomes
             string aux = File.ReadAllText("nomes_corpos_simulador.txt");
             Nomes = aux.Split(';');
         }
 
 
-        //gera os corpos aleatórios com base na quantidade e nos limites estabelecidos pelo usuario
+        //gera os corpos aleatorios com base na quantidade e nos limites estabelecidos pelo usuario
         public void GerarCorposAleatorios(int quantidade)
         {
             Random random = new Random();
             Corpos = new Corpo?[quantidade];
 
-            //laço para gerar os corpos
+            //laco para gerar os corpos
             for (int i = 0; i < quantidade; i++)
             {
                 Corpo corpo = new Corpo();
@@ -69,7 +69,7 @@ namespace SimuladorGavitacional
         }
 
 
-        //metodo para gerars as posiçoes dos corpos no universo
+        //metodo para gerars as posicoes dos corpos no universo
         public void GerarPosicoes(int altura, int largura, Universo universo, Graphics graphics)
         {
             if (Corpos == null || universo.Corpos == null)
@@ -85,7 +85,7 @@ namespace SimuladorGavitacional
             //define a distancia dos objetos em relacao a margem no momento da criacao
             int margem = 100;
 
-            //laço para gerar as posicoes
+            //laco para gerar as posicoes
             for (int i = 0; i < universo.Corpos.Length; i++)
             {
                 //sai do loop se o corpo nao existir
@@ -101,7 +101,7 @@ namespace SimuladorGavitacional
 
                     bool posValida = false;
                     
-                    //laço que gera as coordenadas conforme validacao
+                    //laco que gera as coordenadas conforme validacao
                     while (!posValida && tentativas < 1000)
                     {
                         tentativas++;
@@ -148,7 +148,7 @@ namespace SimuladorGavitacional
 
                     bool posValida = false;
 
-                    //laço que gera as coordenadas conforme validacao
+                    //laco que gera as coordenadas conforme validacao
                     while (!posValida && tentativas < 1000)
                     {
                         tentativas++;
@@ -390,7 +390,7 @@ namespace SimuladorGavitacional
                 return;
             }
 
-            //percorre todos os corpos para verificar possíveis colisões
+            //percorre todos os corpos para verificar possiveis colisoes
             for (int i = 0; i < Corpos.Length; i++)
             {
                 //ignora se o corpo nao existir mais
@@ -450,8 +450,8 @@ namespace SimuladorGavitacional
             double[] aceleracoesX = new double[Corpos.Length];
             double[] aceleracoesY = new double[Corpos.Length];
 
-            // Cada cálculo apenas lê os corpos e grava na posição i dos arrays de
-            // aceleração. Assim todos usam o mesmo estado antes do movimento.
+            //cada calculo apenas le os corpos e grava na posicao i dos arrays de
+            //aceleracao. Assim todos usam o mesmo estado antes do movimento
             Parallel.For(0, Corpos.Length, i =>
             {
                 if (Corpos[i] == null)
@@ -485,8 +485,8 @@ namespace SimuladorGavitacional
                 Corpos[i]!.VelY += aceleracoesY[i] * deltaTempo;
             }
 
-            // As fusões alteram o array de corpos; por isso são tratadas após
-            // os cálculos paralelos, em uma única sequência.
+            //as fusoes alteram o array de corpos; por isso sao tratadas apos
+            //os calculos paralelos, em uma unica sequencia
             TratarColisoes();
         }
 

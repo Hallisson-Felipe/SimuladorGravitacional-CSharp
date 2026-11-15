@@ -34,8 +34,8 @@ namespace SimuladorGavitacional
         }
     }
 
-    // Cada quadro conserva os índices originais; após uma colisão, o corpo absorvido
-    // simplesmente deixa de ter linha nos quadros seguintes.
+    //cada quadro conserva os indices originais; apos uma colisao, o corpo absorvido
+    //simplesmente deixa de ter linha nos quadros seguintes
     public class RepositorioSimulacoes : GravadorDados
     {
         private readonly string stringConexao;
@@ -52,7 +52,7 @@ namespace SimuladorGavitacional
 
         public async Task InicializarBancoAsync()
         {
-            // Conecta primeiro ao servidor sem selecionar um banco específico para poder criá-lo.
+            //conecta primeiro ao servidor sem selecionar um banco especifico para poder cria-lo
             MySqlConnectionStringBuilder dadosServidor = new MySqlConnectionStringBuilder(stringConexao);
             dadosServidor.Database = "";
 
@@ -70,7 +70,7 @@ namespace SimuladorGavitacional
                 }
             }
 
-            // Com o banco criado, conecta diretamente nele e garante a existência das tabelas.
+            //com o banco criado, conecta diretamente nele e garante a existencia das tabelas
             await using (MySqlConnection db = NovaConexao())
             {
                 await db.OpenAsync();
@@ -133,8 +133,8 @@ namespace SimuladorGavitacional
             await using var db = NovaConexao();
             await db.OpenAsync();
 
-            // Metadados, estados dos corpos e última iteração entram na mesma transação
-            // para garantir que nenhuma simulação fique incompleta no banco.
+            //metadados, estados dos corpos e ultima iteracao entram na mesma transacao
+            //para garantir que nenhuma simulacao fique incompleta no banco
             await using var transacao = await db.BeginTransactionAsync();
 
             await using var cmdSimulacao = new MySqlCommand(
@@ -157,7 +157,7 @@ namespace SimuladorGavitacional
             return id;
         }
 
-        // Lê o arquivo TXT local progressivamente e insere os registros no MySQL em lotes.
+        //le o arquivo TXT local progressivamente e insere os registros no MySQL em lotes
         private static async Task InserirEstadosEmLotesAsync(
             MySqlConnection db,
             MySqlTransaction tx,
@@ -334,8 +334,8 @@ namespace SimuladorGavitacional
             List<Quadro> quadros = new List<Quadro>();
             foreach (KeyValuePair<int, Dictionary<int, Corpo>> grupo in grupos)
             {
-                // Recria os espaços vazios dos corpos absorvidos para o replay
-                // preservar as mesmas posições no array original.
+                //recria os espacos vazios dos corpos absorvidos para o replay
+                //preservar as mesmas posicoes no array original
                 Corpo?[] corpos = new Corpo?[tamanho];
                 foreach (KeyValuePair<int, Corpo> item in grupo.Value)
                 {
