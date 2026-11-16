@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MySqlConnector" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Program.cs" Link="Program.cs" />
+    <Compile Include="..\BancoDados\*.cs" Link="BancoDados\%(Filename)%(Extension)" />
+    <Compile Include="..\Formularios\*.cs" Link="Formularios\%(Filename)%(Extension)" />
+    <Compile Include="..\Modelos\*.cs" Link="Modelos\%(Filename)%(Extension)" />
+    <Compile Include="..\Simulacao\*.cs" Link="Simulacao\%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\Formularios\*.resx" Link="Formularios\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\nomes_corpos_simulador.txt" Link="nomes_corpos_simulador.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
