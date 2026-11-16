@@ -1,9 +1,8 @@
 namespace SimuladorGavitacional
 {
-    //contrato abstrato de persistencia das simulacoes
     public abstract class GravadorDados
     {
-        //persiste a simulacao completa no banco a partir do arquivo local temporario
+        //salva a simulacao completa no banco a partir do txt temporario
         public abstract Task<long> SalvarSimulacaoAsync(
             int intervaloMs,
             double deltaTempo,

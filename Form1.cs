@@ -44,13 +44,13 @@ namespace SimuladorGavitacional
         {
             if (numericMassaMin.Value > numericMassaMax.Value)
             {
-                MessageBox.Show("A massa mÌnima n„o pode ser maior que a massa m·xima.");
+                MessageBox.Show("A massa m√≠nima n√£o pode ser maior que a massa m√°xima.");
                 return false;
             }
 
             if (numericVelMin.Value > numericVelMax.Value)
             {
-                MessageBox.Show("A velocidade mÌnima n„o pode ser maior que a velocidade m·xima.");
+                MessageBox.Show("A velocidade m√≠nima n√£o pode ser maior que a velocidade m√°xima.");
                 return false;
             }
 

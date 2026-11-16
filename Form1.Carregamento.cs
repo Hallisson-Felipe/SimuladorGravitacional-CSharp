@@ -47,7 +47,19 @@ namespace SimuladorGavitacional
                     ClientSize = new Size(460, 330),
                     StartPosition = FormStartPosition.CenterParent
                 };
-                ListBox itens = new ListBox { Dock = DockStyle.Top, Height = 275 };
+                ListBox itens = new ListBox
+                {
+                    Dock = DockStyle.Top,
+                    Height = 275,
+                    FormattingEnabled = true
+                };
+                itens.Format += (_, args) =>
+                {
+                    if (args.ListItem is SimulacaoSalva simulacao)
+                    {
+                        args.Value = $"#{simulacao.Id} — {simulacao.CriadaEm:dd/MM/yyyy HH:mm} — {simulacao.UltimaIteracao} iterações";
+                    }
+                };
                 foreach (SimulacaoSalva simulacao in lista)
                 {
                     itens.Items.Add(simulacao);

@@ -3,41 +3,9 @@ using MySqlConnector;
 
 namespace SimuladorGavitacional
 {
-    public class SimulacaoSalva
-    {
-        public long Id { get; set; }
-        public DateTime CriadaEm { get; set; }
-        public int UltimaIteracao { get; set; }
-
-        public SimulacaoSalva(long id, DateTime criadaEm, int ultimaIteracao)
-        {
-            Id = id;
-            CriadaEm = criadaEm;
-            UltimaIteracao = ultimaIteracao;
-        }
-
-        public override string ToString()
-        {
-            return $"#{Id} — {CriadaEm:dd/MM/yyyy HH:mm} — {UltimaIteracao} iterações";
-        }
-    }
-
-    public class Quadro
-    {
-        public int Iteracao { get; set; }
-        public Corpo?[] Corpos { get; set; }
-
-        public Quadro(int iteracao, Corpo?[] corpos)
-        {
-            Iteracao = iteracao;
-            Corpos = corpos;
-        }
-    }
-
-    //cada quadro conserva os indices originais; apos uma colisao, o corpo absorvido
-    //simplesmente deixa de ter linha nos quadros seguintes
     public class RepositorioSimulacoes : GravadorDados
     {
+        //string de conexao banco de dados MySQL
         private readonly string stringConexao;
 
         public RepositorioSimulacoes(string stringConexao)
@@ -45,14 +13,16 @@ namespace SimuladorGavitacional
             this.stringConexao = stringConexao;
         }
 
+        //conecta o banco  
         private MySqlConnection NovaConexao()
         {
             return new MySqlConnection(stringConexao);
         }
 
+        //funcao que cria o banco de dados e as tabelas necessarias, se nao existir
         public async Task InicializarBancoAsync()
         {
-            //conecta primeiro ao servidor sem selecionar um banco especifico para poder cria-lo
+            //conecta ao servidor MySQL mesmo que o banco não exista ainda
             MySqlConnectionStringBuilder dadosServidor = new MySqlConnectionStringBuilder(stringConexao);
             dadosServidor.Database = "";
 
@@ -60,21 +30,22 @@ namespace SimuladorGavitacional
             {
                 await dbServidor.OpenAsync();
 
+                //script de criacao do banco
                 const string sqlCriarBanco =
                     "CREATE DATABASE IF NOT EXISTS simulador_gravitacional " +
                     "CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
 
+                //roda o script
                 await using (MySqlCommand cmdBanco = new MySqlCommand(sqlCriarBanco, dbServidor))
                 {
                     await cmdBanco.ExecuteNonQueryAsync();
                 }
             }
-
-            //com o banco criado, conecta diretamente nele e garante a existencia das tabelas
             await using (MySqlConnection db = NovaConexao())
             {
                 await db.OpenAsync();
 
+                //script de criacao da tabela simulacoes
                 const string sqlSimulacoes =
                     "CREATE TABLE IF NOT EXISTS simulacoes (" +
                     "id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, " +
@@ -85,11 +56,13 @@ namespace SimuladorGavitacional
                     "PRIMARY KEY (id)" +
                     ") ENGINE = InnoDB;";
 
+                //roda os scripts
                 await using (MySqlCommand cmdSimulacoes = new MySqlCommand(sqlSimulacoes, db))
                 {
                     await cmdSimulacoes.ExecuteNonQueryAsync();
                 }
 
+                //script de criacao da tabela estados
                 const string sqlEstados =
                     "CREATE TABLE IF NOT EXISTS estados_corpos (" +
                     "simulacao_id BIGINT UNSIGNED NOT NULL, " +
@@ -109,6 +82,7 @@ namespace SimuladorGavitacional
                     "ON DELETE CASCADE" +
                     ") ENGINE = InnoDB;";
 
+                //roda os scripts
                 await using (MySqlCommand cmdEstados = new MySqlCommand(sqlEstados, db))
                 {
                     await cmdEstados.ExecuteNonQueryAsync();
@@ -116,59 +90,62 @@ namespace SimuladorGavitacional
             }
         }
 
+        //testa a conexao com o banco
         public async Task TestarAsync()
         {
-            await using var db = NovaConexao();
+            await using MySqlConnection db = NovaConexao();
             await db.OpenAsync();
-            await using var comando = new MySqlCommand("SELECT 1 FROM simulacoes LIMIT 1", db);
+            await using MySqlCommand comando = new MySqlCommand("SELECT 1 FROM simulacoes LIMIT 1", db);
             await comando.ExecuteScalarAsync();
         }
 
-        public override async Task<long> SalvarSimulacaoAsync(
-            int intervaloMs,
-            double deltaTempo,
-            int ultimaIteracao,
-            string caminhoArquivo)
+        //sobrecarga do metodo abstrato que salva as simulacoes
+        public override async Task<long> SalvarSimulacaoAsync(int intervaloMs, double deltaTempo, int ultimaIteracao, string caminhoArquivo)
         {
-            await using var db = NovaConexao();
+            await using MySqlConnection db = NovaConexao();
             await db.OpenAsync();
 
-            //metadados, estados dos corpos e ultima iteracao entram na mesma transacao
-            //para garantir que nenhuma simulacao fique incompleta no banco
-            await using var transacao = await db.BeginTransactionAsync();
+            //inicia a transacao
+            await using MySqlTransaction transacao = await db.BeginTransactionAsync();
 
-            await using var cmdSimulacao = new MySqlCommand(
+            //insere os dados da simulacao
+            await using MySqlCommand cmdSimulacao = new MySqlCommand(
                 "INSERT INTO simulacoes (intervalo_ms, delta_tempo_s) VALUES (@intervalo, @delta)", db, transacao);
             cmdSimulacao.Parameters.AddWithValue("@intervalo", intervaloMs);
             cmdSimulacao.Parameters.AddWithValue("@delta", deltaTempo);
             await cmdSimulacao.ExecuteNonQueryAsync();
 
+            //pega o ultimo ID
             long id = cmdSimulacao.LastInsertedId;
 
+            //insere os estados
             await InserirEstadosEmLotesAsync(db, transacao, id, caminhoArquivo);
 
-            await using var cmdAtualizar = new MySqlCommand(
+            //atualiza a ultima iteracao     
+            await using MySqlCommand cmdAtualizar = new MySqlCommand(
                 "UPDATE simulacoes SET ultima_iteracao=@iteracao WHERE id=@id", db, transacao);
             cmdAtualizar.Parameters.AddWithValue("@iteracao", ultimaIteracao);
             cmdAtualizar.Parameters.AddWithValue("@id", id);
             await cmdAtualizar.ExecuteNonQueryAsync();
 
+            //confirma a transacao
             await transacao.CommitAsync();
             return id;
         }
 
-        //le o arquivo TXT local progressivamente e insere os registros no MySQL em lotes
-        private static async Task InserirEstadosEmLotesAsync(
-            MySqlConnection db,
-            MySqlTransaction tx,
-            long simulacaoId,
-            string caminhoArquivo)
+        //le o arquivo TXT local e insere os registros no banco em lotes de 200
+        private static async Task InserirEstadosEmLotesAsync(MySqlConnection db, MySqlTransaction tx, long simulacaoId, string caminhoArquivo)
         {
+            //define o tamanho do lote 
             const int tamanhoLote = 200;
 
+            //abre o arquivo txt que contem a simulacao
             using StreamReader leitor = new StreamReader(caminhoArquivo, Encoding.UTF8);
 
+
             List<string> valoresSql = new List<string>(tamanhoLote);
+
+            //cria o comando de insercao
             using MySqlCommand comando = new MySqlCommand();
             comando.Connection = db;
             comando.Transaction = tx;
@@ -177,8 +154,10 @@ namespace SimuladorGavitacional
             int indiceNoLote = 0;
             string? linha;
 
+            //le o arquivo
             while ((linha = await leitor.ReadLineAsync()) != null)
             {
+                //ignora se a linha for nula ou vazia
                 if (string.IsNullOrWhiteSpace(linha))
                 {
                     continue;
@@ -186,17 +165,20 @@ namespace SimuladorGavitacional
 
                 string[] partes = linha.Split(';');
 
+                //se for a linha de iteracao atualiza a variavel e pula para a proxima linha
                 if (partes[0] == "ITERACAO")
                 {
                     iteracaoAtual = int.Parse(partes[1]);
                     continue;
                 }
 
+                //ignora se nao for linha de corpo
                 if (partes[0] != "CORPO")
                 {
                     continue;
                 }
 
+                //converte os dados do txt para o tipo certo
                 int indiceCorpo = int.Parse(partes[1]);
                 string nome = partes[2];
                 double massa = double.Parse(partes[3]);
@@ -207,6 +189,7 @@ namespace SimuladorGavitacional
                 double velY = double.Parse(partes[8]);
                 int corArgb = int.Parse(partes[9]);
 
+                //cria os parametros para cada corpo
                 string pIt = "@it" + indiceNoLote;
                 string pInd = "@ind" + indiceNoLote;
                 string pNome = "@nome" + indiceNoLote;
@@ -218,9 +201,11 @@ namespace SimuladorGavitacional
                 string pVy = "@vy" + indiceNoLote;
                 string pCor = "@cor" + indiceNoLote;
 
+                //adiciona a estrutura do registro na lista
                 valoresSql.Add(
                     $"(@id, {pIt}, {pInd}, {pNome}, {pMassa}, {pDens}, {pX}, {pY}, {pVx}, {pVy}, {pCor})");
 
+                //associa os parametros ao comando
                 comando.Parameters.AddWithValue(pIt, iteracaoAtual);
                 comando.Parameters.AddWithValue(pInd, indiceCorpo);
                 comando.Parameters.AddWithValue(pNome, nome);
@@ -234,8 +219,10 @@ namespace SimuladorGavitacional
 
                 indiceNoLote++;
 
+                //executa quando o lote atinge o tamanho maximo
                 if (indiceNoLote >= tamanhoLote)
                 {
+                    //executa o lote, limpa a lista e o comando e zera o indice
                     await ExecutarLoteAsync(comando, simulacaoId, valoresSql);
                     valoresSql.Clear();
                     comando.Parameters.Clear();
@@ -243,35 +230,48 @@ namespace SimuladorGavitacional
                 }
             }
 
+            //executa o ultimo lote se tiver sobrado algum
             if (valoresSql.Count > 0)
             {
                 await ExecutarLoteAsync(comando, simulacaoId, valoresSql);
             }
         }
 
-        private static async Task ExecutarLoteAsync(
-            MySqlCommand comando,
-            long simulacaoId,
-            List<string> valoresSql)
+        //metodo para executar o lote
+        private static async Task ExecutarLoteAsync(MySqlCommand comando, long simulacaoId, List<string> valoresSql)
         {
+            //define os parametros
             comando.Parameters.AddWithValue("@id", simulacaoId);
+
+            //define o comando em lote
             comando.CommandText =
                 "INSERT INTO estados_corpos " +
                 "(simulacao_id, iteracao, indice_corpo, nome, massa_kg, densidade_kg_m3, " +
                 "pos_x, pos_y, vel_x_m_s, vel_y_m_s, cor_argb) VALUES " +
                 string.Join(", ", valoresSql);
 
+            //executa o comando
             await comando.ExecuteNonQueryAsync();
         }
 
+        //metodo que lista as simulacoes salvas
         public override async Task<List<SimulacaoSalva>> ListarAsync()
         {
+            //cria a lista das simulacoes
             List<SimulacaoSalva> resultado = new List<SimulacaoSalva>();
-            await using var db = NovaConexao();
+
+            //conecta no banco
+            await using MySqlConnection db = NovaConexao();
             await db.OpenAsync();
-            await using var comando = new MySqlCommand(
+
+            //cria o comando de busca
+            await using MySqlCommand comando = new MySqlCommand(
                 "SELECT id, criada_em, ultima_iteracao FROM simulacoes ORDER BY id DESC", db);
-            await using var leitor = await comando.ExecuteReaderAsync();
+
+            //variavel que le a consulta
+            await using MySqlDataReader leitor = await comando.ExecuteReaderAsync();
+
+            //adiciona as simulacoes na lista
             while (await leitor.ReadAsync())
             {
                 resultado.Add(new SimulacaoSalva(
@@ -282,42 +282,60 @@ namespace SimuladorGavitacional
             return resultado;
         }
 
+
         public override async Task<(int IntervaloMs, double DeltaTempo, List<Quadro> Quadros)> CarregarAsync(long id)
         {
-            await using var db = NovaConexao();
+            //abre a conexao com o banco e consulta as configuracoes da simulacao
+            await using MySqlConnection db = NovaConexao();
             await db.OpenAsync();
-            await using var meta = new MySqlCommand(
+            await using MySqlCommand meta = new MySqlCommand(
                 "SELECT intervalo_ms, delta_tempo_s FROM simulacoes WHERE id=@id", db);
+
+            //informa o identificador da simulacao que sera consultada
             meta.Parameters.AddWithValue("@id", id);
+
+            //declara as variaveis que armazenarao as configuracoes da simulacao
             int intervalo;
             double delta;
-            await using (var leitor = await meta.ExecuteReaderAsync())
+
+            //executa a consulta e verifica se a simulacao existe antes de recuperar seus dados
+            await using (MySqlDataReader leitor = await meta.ExecuteReaderAsync())
             {
                 if (!await leitor.ReadAsync()) throw new InvalidOperationException("Simulação não encontrada.");
                 intervalo = leitor.GetInt32(0);
                 delta = leitor.GetDouble(1);
             }
 
+            //consulta os estados dos corpos da simulacao, organizando os resultados por iteracao e indice do corpo
             const string sql =
                 "SELECT iteracao, indice_corpo, nome, massa_kg, densidade_kg_m3, " +
                 "pos_x, pos_y, vel_x_m_s, vel_y_m_s, cor_argb " +
                 "FROM estados_corpos WHERE simulacao_id=@id ORDER BY iteracao, indice_corpo";
 
-            await using var comando = new MySqlCommand(sql, db);
+            //prepara a consulta e informa qual simulacao deve ser carregada
+            await using MySqlCommand comando = new MySqlCommand(sql, db);
             comando.Parameters.AddWithValue("@id", id);
+
+            //cria uma estrutura para agrupar os corpos de cada iteracao e guarda o tamanho necessario para os arrays
             SortedDictionary<int, Dictionary<int, Corpo>> grupos = new SortedDictionary<int, Dictionary<int, Corpo>>();
             int tamanho = 0;
-            await using var dados = await comando.ExecuteReaderAsync();
+
+            //executa a consulta e percorre todos os estados dos corpos encontrados
+            await using MySqlDataReader dados = await comando.ExecuteReaderAsync();
             while (await dados.ReadAsync())
             {
                 int it = dados.GetInt32(0);
                 int indice = dados.GetInt32(1);
                 tamanho = Math.Max(tamanho, indice + 1);
+
+                //procura o grupo da iteracao atual e cria um novo caso ainda nao exista
                 if (!grupos.TryGetValue(it, out Dictionary<int, Corpo>? grupo))
                 {
                     grupo = new Dictionary<int, Corpo>();
                     grupos[it] = grupo;
                 }
+
+                //recria o corpo com os dados recuperados do banco e armazena no indice correspondente
                 grupo[indice] = new Corpo
                 {
                     Nome = dados.GetString(2),
@@ -331,19 +349,28 @@ namespace SimuladorGavitacional
                 };
             }
 
+            //cria a lista que armazenara os quadros reconstruidos da simulacao
             List<Quadro> quadros = new List<Quadro>();
+
+            //percorre os grupos de iteracoes para reconstruir os respectivos quadros
             foreach (KeyValuePair<int, Dictionary<int, Corpo>> grupo in grupos)
             {
-                //recria os espacos vazios dos corpos absorvidos para o replay
-                //preservar as mesmas posicoes no array original
+                //cria um array para preservar as posicoes originais dos corpos, mantendo vazias as posicoes sem registros
                 Corpo?[] corpos = new Corpo?[tamanho];
+
+                //coloca cada corpo na sua posicao original dentro do array
                 foreach (KeyValuePair<int, Corpo> item in grupo.Value)
                 {
                     corpos[item.Key] = item.Value;
                 }
+
+                //cria um quadro com o numero da iteracao e os corpos recuperados
                 quadros.Add(new Quadro(grupo.Key, corpos));
             }
+
+            //retorna as configuracoes e os quadros recuperados para reproduzir a simulacao
             return (intervalo, delta, quadros);
         }
+
     }
 }
