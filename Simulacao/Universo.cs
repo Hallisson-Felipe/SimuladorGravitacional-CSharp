@@ -11,8 +11,8 @@ namespace SimuladorGavitacional
         //array de nomes
         public string[] Nomes { get; set; } = new string[100];
 
-        public double[] posicoesXIniciais { get; set; } = Array.Empty<double>();
-        public double[] posicoesYIniciais { get; set; } = Array.Empty<double>();
+        public double[] PosicoesXIniciais { get; set; } = Array.Empty<double>();
+        public double[] PosicoesYIniciais { get; set; } = Array.Empty<double>();
 
         //limites dos corpos
         public double EscalaUniverso { get; set; }
@@ -77,8 +77,8 @@ namespace SimuladorGavitacional
                 return;
             }
 
-            posicoesXIniciais = new double[universo.Corpos.Length];
-            posicoesYIniciais = new double[universo.Corpos.Length];
+            PosicoesXIniciais = new double[universo.Corpos.Length];
+            PosicoesYIniciais = new double[universo.Corpos.Length];
             int corposIgnorados = 0;
             Random random = new Random();
 
@@ -128,8 +128,8 @@ namespace SimuladorGavitacional
                         //valida a posicao criada, salva as posicoes iniciais e quebra o lopp
                         if (ValidarPosicao(Corpos[i]!.PosX, Corpos[i]!.PosY, raioPixels,altura, largura))
                         {
-                            posicoesXIniciais[i] = Corpos[i]!.PosX;
-                            posicoesYIniciais[i] = Corpos[i]!.PosY;
+                            PosicoesXIniciais[i] = Corpos[i]!.PosX;
+                            PosicoesYIniciais[i] = Corpos[i]!.PosY;
                             posValida = true;
                         }
                     }
@@ -177,8 +177,8 @@ namespace SimuladorGavitacional
                             Corpos[i]!.AreaOcupada = regiao;
 
                             //salva as posicoes iniciais dos corpos
-                            posicoesXIniciais[i] = Corpos[i]!.PosX;
-                            posicoesYIniciais[i] = Corpos[i]!.PosY;
+                            PosicoesXIniciais[i] = Corpos[i]!.PosX;
+                            PosicoesYIniciais[i] = Corpos[i]!.PosY;
 
                             posValida = true;
 
@@ -257,7 +257,7 @@ namespace SimuladorGavitacional
 
 
         //metodo para calcular a forca gravitacional
-        public (double forcaTotalx, double forcaTotalY) CalcularForcaGravitacional(int indice)
+        public (double forcaTotalX, double forcaTotalY) CalcularForcaGravitacional(int indice)
         {
             //constante gravitacional do formulario: G = 6,674184 * 10^-11
             const double G = 6.674184e-11;

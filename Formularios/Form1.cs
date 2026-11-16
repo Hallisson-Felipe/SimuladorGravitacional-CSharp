@@ -4,11 +4,11 @@ namespace SimuladorGavitacional
     public partial class Form1 : Form
     {
 
-        Universo universo { get; set; }
+        Universo Universo { get; set; }
         public Form1()
         {
             InitializeComponent();
-            universo = new Universo();
+            Universo = new Universo();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -24,17 +24,17 @@ namespace SimuladorGavitacional
                 return;
             }
             //define os limites do corpo
-            universo.MassaMin = (double)numericMassaMin.Value;
-            universo.MassaMax = (double)numericMassaMax.Value;
+            Universo.MassaMin = (double)numericMassaMin.Value;
+            Universo.MassaMax = (double)numericMassaMax.Value;
 
-            universo.VelocidadeMin = (double)numericVelMin.Value;
-            universo.VelocidadeMax = (double)numericVelMax.Value;
+            Universo.VelocidadeMin = (double)numericVelMin.Value;
+            Universo.VelocidadeMax = (double)numericVelMax.Value;
 
             //chama o metodo que gera os corpos
-            universo.GerarCorposAleatorios((int)numericQuant.Value);
+            Universo.GerarCorposAleatorios((int)numericQuant.Value);
 
             //instancia e mostra o formulario onde o universo sera exibido
-            FormUniverso formUniverso = new FormUniverso(universo);
+            FormUniverso formUniverso = new FormUniverso(Universo);
             formUniverso.Show();
 
         }

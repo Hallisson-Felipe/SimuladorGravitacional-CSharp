@@ -8,8 +8,8 @@ namespace SimuladorGavitacional
     {
         private Universo universo;
         private double deltaTempo;
-        private int IntervaloIteracoes;
-        private int qtdIteracoes;
+        private int intervaloIteracoes;
+        private int quantidadeIteracoes;
         private readonly bool posicoesCarregadas;
         private readonly GravadorDados? banco;
         private readonly List<Quadro>? quadrosReplay;
@@ -19,7 +19,7 @@ namespace SimuladorGavitacional
         private bool simulacaoFinalizada;
 
         public FormUniverso(
-            Universo u,
+            Universo universo,
             bool posicoesCarregadas = false,
             int iteracoesIniciais = 0,
             int intervaloIteracoes = 16,
@@ -28,23 +28,23 @@ namespace SimuladorGavitacional
         {
             //inicializa o formulario e o universo
             InitializeComponent();
-            universo = u;
+            this.universo = universo;
 
             //define o intervalo entre as iteracoes em ms
             this.posicoesCarregadas = posicoesCarregadas;
             this.banco = banco;
             this.quadrosReplay = quadrosReplay;
-            IntervaloIteracoes = intervaloIteracoes;
-            timerUniverso.Interval = IntervaloIteracoes;
+            this.intervaloIteracoes = intervaloIteracoes;
+            timerUniverso.Interval = this.intervaloIteracoes;
 
             //define o deltaTempo e a escala do universo em pixels/metro
             deltaTempo = 0.0005;
-            universo.EscalaUniverso = 300;
-            universo.EscalaVisualCorpos = 30;
+            this.universo.EscalaUniverso = 300;
+            this.universo.EscalaVisualCorpos = 30;
 
             //contador da quantidade de iteracoes
-            qtdIteracoes = iteracoesIniciais;
-            if (quadrosReplay is not null) qtdIteracoes = quadrosReplay[0].Iteracao;
+            quantidadeIteracoes = iteracoesIniciais;
+            if (quadrosReplay is not null) quantidadeIteracoes = quadrosReplay[0].Iteracao;
 
             this.WindowState = FormWindowState.Maximized;
             this.FormClosing += FormUniverso_FormClosing;
@@ -61,7 +61,7 @@ namespace SimuladorGavitacional
             }
 
             //faz um reload no panelUniverso
-            labelIteracoes.Text = $"{qtdIteracoes} Iterações";
+            labelIteracoes.Text = $"{quantidadeIteracoes} Iterações";
             labelIteracoes.Visible = true;
             panelUniverso.Invalidate();
         }
@@ -96,10 +96,10 @@ namespace SimuladorGavitacional
                     //transofrma o raio em diametro
                     float diametro = raioPixels * 2;
 
-                    using (SolidBrush brush = new SolidBrush(corpo.Cor))
+                    using (SolidBrush pincel = new SolidBrush(corpo.Cor))
                     {
                         //desenha o corpo
-                        e.Graphics.FillEllipse(brush, x, y, diametro, diametro);
+                        e.Graphics.FillEllipse(pincel, x, y, diametro, diametro);
 
                         //faz uma elipse pequena no centro do corpo
                         e.Graphics.FillEllipse(Brushes.Black, (float)corpo.PosX - 2, (float)corpo.PosY - 2, 4, 4);
@@ -129,15 +129,15 @@ namespace SimuladorGavitacional
                     return;
                 }
                 universo.Corpos = quadrosReplay[indiceReplay].Corpos!;
-                qtdIteracoes = quadrosReplay[indiceReplay].Iteracao;
-                labelIteracoes.Text = $"{qtdIteracoes} Iterações — replay";
+                quantidadeIteracoes = quadrosReplay[indiceReplay].Iteracao;
+                labelIteracoes.Text = $"{quantidadeIteracoes} Iterações — replay";
                 panelUniverso.Invalidate();
                 return;
             }
             
             //incrementa a quantidade de iteracoes
-            qtdIteracoes++;
-            labelIteracoes.Text = $"{qtdIteracoes} Iteracoes";
+            quantidadeIteracoes++;
+            labelIteracoes.Text = $"{quantidadeIteracoes} Iteracoes";
 
             //calcula, exibe e registra localmente o estado desta iteracao, sem acessar o MySQL
             universo.ExecutarIteracao(deltaTempo);
@@ -145,7 +145,7 @@ namespace SimuladorGavitacional
 
             if (registroLocal != null)
             {
-                registroLocal.RegistrarIteracao(qtdIteracoes, universo.Corpos);
+                registroLocal.RegistrarIteracao(quantidadeIteracoes, universo.Corpos);
             }
         }
 
@@ -157,7 +157,7 @@ namespace SimuladorGavitacional
             {
                 indiceReplay = 0;
                 universo.Corpos = quadrosReplay[0].Corpos!;
-                qtdIteracoes = quadrosReplay[0].Iteracao;
+                quantidadeIteracoes = quadrosReplay[0].Iteracao;
                 panelUniverso.Invalidate();
             }
 
@@ -257,9 +257,9 @@ namespace SimuladorGavitacional
 
                 //persiste toda a simulacao no MySQL em lotes dentro de uma transacao
                 await banco.SalvarSimulacaoAsync(
-                    IntervaloIteracoes,
+                    intervaloIteracoes,
                     deltaTempo,
-                    qtdIteracoes,
+                    quantidadeIteracoes,
                     registroLocal.CaminhoArquivo);
             }
             catch (Exception ex) when (ex is MySqlConnector.MySqlException or IOException)

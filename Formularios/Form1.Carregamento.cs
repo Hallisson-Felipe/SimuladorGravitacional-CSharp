@@ -12,15 +12,15 @@ namespace SimuladorGavitacional
             {
                 GravadorDados? banco = await ConexaoBanco.ObterAsync(this);
                 if (banco == null) return;
-                Universo novo = new Universo
+                Universo novoUniverso = new Universo
                 {
                     MassaMin = (double)numericMassaMin.Value,
                     MassaMax = (double)numericMassaMax.Value,
                     VelocidadeMin = (double)numericVelMin.Value,
                     VelocidadeMax = (double)numericVelMax.Value
                 };
-                novo.GerarCorposAleatorios((int)numericQuant.Value);
-                new FormUniverso(novo, banco: banco).Show();
+                novoUniverso.GerarCorposAleatorios((int)numericQuant.Value);
+                new FormUniverso(novoUniverso, banco: banco).Show();
             }
             catch (Exception ex) when (ex is MySqlException or FormatException or IOException)
             {
@@ -53,11 +53,11 @@ namespace SimuladorGavitacional
                     Height = 275,
                     FormattingEnabled = true
                 };
-                itens.Format += (_, args) =>
+                itens.Format += (_, argumentos) =>
                 {
-                    if (args.ListItem is SimulacaoSalva simulacao)
+                    if (argumentos.ListItem is SimulacaoSalva simulacao)
                     {
-                        args.Value = $"#{simulacao.Id} — {simulacao.CriadaEm:dd/MM/yyyy HH:mm} — {simulacao.UltimaIteracao} iterações";
+                        argumentos.Value = $"#{simulacao.Id} — {simulacao.CriadaEm:dd/MM/yyyy HH:mm} — {simulacao.UltimaIteracao} iterações";
                     }
                 };
                 foreach (SimulacaoSalva simulacao in lista)
