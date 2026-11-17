@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Simulacao\Universo.cs" Condition="Exists('..\Simulacao\Universo.cs')" />
+    <Compile Include="..\Modelos\Corpo.cs" Condition="Exists('..\Modelos\Corpo.cs')" />
+    <Compile Include="..\Universo.cs" Condition="Exists('..\Universo.cs')" />
+    <Compile Include="..\Corpo.cs" Condition="Exists('..\Corpo.cs')" />
+    <Content Include="..\nomes_corpos_simulador.txt" Link="nomes_corpos_simulador.txt" CopyToOutputDirectory="PreserveNewest" />
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation" Value="false" />
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredPGO" Value="false" />
+  </ItemGroup>
+</Project>
