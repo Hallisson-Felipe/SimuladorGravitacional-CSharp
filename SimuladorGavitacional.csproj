@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TesteDesempenho\**\*.cs" />
     <None Remove="nomes_corpos_simulador.txt" />
   </ItemGroup>
 
